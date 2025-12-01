@@ -1,0 +1,284 @@
+<div class="max-w-7xl mx-auto space-y-5">
+  <!-- Header + KPIs -->
+  <div class="rounded-2xl overflow-hidden shadow-lg">
+    <div class="bg-gradient-to-r from-blue-600 to-sky-500 text-white px-6 py-5">
+      <div class="flex items-start justify-between">
+        <div>
+          <h2 class="text-2xl font-semibold">Donación de Artículos</h2>
+          <p class="opacity-90 mt-1">Agrega múltiples artículos a esta donación</p>
+        </div>
+        <div class="flex gap-4">
+          <div class="bg-white/15 backdrop-blur px-4 py-2 rounded-xl text-center">
+            <div class="text-sm opacity-90">Artículos agregados</div>
+            <div class="text-2xl font-bold">{{ articulosAgregados().length }}</div>
+          </div>
+          <div class="bg-white/15 backdrop-blur px-4 py-2 rounded-xl text-center">
+            <div class="text-sm opacity-90">Total unidades</div>
+            <div class="text-2xl font-bold">{{ calcularTotalUnidades() }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensajes -->
+  <div *ngIf="okMsg()" class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl flex items-center gap-2">
+    <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+    </svg>
+    <span>{{ okMsg() }}</span>
+  </div>
+
+  <div *ngIf="errMsg()" class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl flex items-center gap-2">
+    <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+    </svg>
+    <span>{{ errMsg() }}</span>
+  </div>
+
+  <!-- Formulario de búsqueda y agregar artículo -->
+  <div class="bg-white rounded-2xl shadow-lg p-6">
+    <h3 class="text-lg font-semibold text-slate-800 mb-4">Agregar Artículo</h3>
+    
+    <!-- Búsqueda de artículo -->
+    <div class="mb-5">
+      <div class="relative">
+        <label class="block text-sm font-medium text-slate-700 mb-1">Buscar Artículo</label>
+        <div class="relative">
+          <input type="text"
+                 #searchInput
+                 (focus)="onFocusSearch(searchInput)"
+                 (input)="onSearch(searchInput.value)"
+                 [value]="selectedArticulo()?.nombreArticulo || ''"
+                 placeholder="Buscar por nombre (mínimo 2 letras)…"
+                 class="w-full rounded-lg border-slate-300 focus:border-blue-600 focus:ring-blue-600 pr-10 py-2.5"/>
+          <button *ngIf="selectedArticulo()" 
+                  type="button" 
+                  (click)="clearArticulo(searchInput)"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
+                  aria-label="Limpiar">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Dropdown resultados -->
+        <div *ngIf="showDropdown() && results().length"
+             class="absolute z-20 mt-2 w-full bg-white border border-sky-200 rounded-xl shadow-xl max-h-64 overflow-auto">
+          <ul class="divide-y divide-slate-100">
+            <li *ngFor="let a of results()">
+              <button type="button" 
+                      (click)="pickArticulo(a)"
+                      class="w-full text-left px-4 py-3 hover:bg-sky-50 focus:bg-sky-50 focus:outline-none transition">
+                <div class="font-medium text-slate-800">{{ a.nombreArticulo }}</div>
+                <div class="text-xs text-slate-500 mt-0.5">
+                  {{ a.categoria?.nombreCategoria || 'Sin categoría' }}
+                  <span *ngIf="a.descripcion">• {{ a.descripcion }}</span>
+                </div>
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Selección actual -->
+        <p *ngIf="selectedArticulo()" class="text-sm text-slate-700 mt-2 flex items-center gap-2">
+          <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+          </svg>
+          <span>Seleccionado: <span class="font-medium">{{ selectedArticulo()!.nombreArticulo }}</span></span>
+          <span class="text-slate-500">({{ selectedArticulo()!.categoria?.nombreCategoria || 'Sin categoría' }})</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Formulario de detalles del artículo -->
+    <form [formGroup]="form" (ngSubmit)="agregarArticulo()" class="space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Cantidad -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">
+            Cantidad <span class="text-red-500">*</span>
+          </label>
+          <input type="number" 
+                 formControlName="cantidad" 
+                 min="1"
+                 class="w-full rounded-lg border-slate-300 focus:border-blue-600 focus:ring-blue-600"/>
+          <p *ngIf="form.get('cantidad')?.invalid && form.get('cantidad')?.touched" 
+             class="text-xs text-red-600 mt-1">
+            Cantidad requerida (mín. 1)
+          </p>
+        </div>
+
+        <!-- Estado -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">
+            Estado <span class="text-red-500">*</span>
+          </label>
+          <select formControlName="estadoArticulo"
+                  class="w-full rounded-lg border-slate-300 bg-white focus:border-blue-600 focus:ring-blue-600">
+            <option value="NUEVO">Nuevo</option>
+            <option value="USADO_BUENO">Usado - Bueno</option>
+            <option value="USADO_REGULAR">Usado - Regular</option>
+            <option value="REPARAR">A Reparar</option>
+          </select>
+        </div>
+
+        <!-- Fecha de vencimiento -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Fecha de vencimiento</label>
+          <input type="date" 
+                 formControlName="fechaVencimiento"
+                 class="w-full rounded-lg border-slate-300 focus:border-blue-600 focus:ring-blue-600"/>
+        </div>
+
+        <!-- Botón agregar -->
+        <div class="flex items-end">
+          <button type="submit"
+                  [disabled]="!selectedArticulo()"
+                  class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-medium py-2.5 px-4 rounded-lg transition flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Agregar a la lista
+          </button>
+        </div>
+      </div>
+
+      <!-- Descripción (ocupa toda la fila) -->
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Descripción / Notas</label>
+        <textarea formControlName="descripcion"
+                  rows="2"
+                  maxlength="300"
+                  placeholder="Notas adicionales sobre este artículo..."
+                  class="w-full rounded-lg border-slate-300 focus:border-blue-600 focus:ring-blue-600 resize-none"></textarea>
+        <p class="text-xs text-slate-500 mt-1">
+          {{ form.get('descripcion')?.value?.length || 0 }} / 300 caracteres
+        </p>
+      </div>
+    </form>
+  </div>
+
+  <!-- Lista de artículos agregados -->
+  <div class="bg-white rounded-2xl shadow-lg p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-slate-800">Artículos en esta donación</h3>
+      <span class="text-sm text-slate-600">{{ articulosAgregados().length }} artículo(s)</span>
+    </div>
+
+    <!-- Mensaje cuando no hay artículos -->
+    <div *ngIf="articulosAgregados().length === 0" 
+         class="text-center py-12 text-slate-500">
+      <svg class="w-16 h-16 mx-auto mb-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+      </svg>
+      <p class="text-lg font-medium">No hay artículos agregados</p>
+      <p class="text-sm mt-1">Busca y agrega artículos usando el formulario de arriba</p>
+    </div>
+
+    <!-- Tabla de artículos -->
+    <div *ngIf="articulosAgregados().length > 0" class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-slate-200">
+            <th class="text-left py-3 px-4 text-sm font-semibold text-slate-700">Artículo</th>
+            <th class="text-center py-3 px-4 text-sm font-semibold text-slate-700">Cantidad</th>
+            <th class="text-center py-3 px-4 text-sm font-semibold text-slate-700">Estado</th>
+            <th class="text-left py-3 px-4 text-sm font-semibold text-slate-700">Vencimiento</th>
+            <th class="text-left py-3 px-4 text-sm font-semibold text-slate-700">Descripción</th>
+            <th class="text-center py-3 px-4 text-sm font-semibold text-slate-700">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr *ngFor="let item of articulosAgregados(); let i = index" 
+              class="hover:bg-slate-50 transition">
+            <!-- Artículo -->
+            <td class="py-3 px-4">
+              <div class="font-medium text-slate-800">{{ item.articulo.nombreArticulo }}</div>
+              <div class="text-xs text-slate-500">
+                {{ item.articulo.categoria?.nombreCategoria || 'Sin categoría' }}
+              </div>
+            </td>
+
+            <!-- Cantidad -->
+            <td class="py-3 px-4 text-center">
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                {{ item.cantidad }}
+              </span>
+            </td>
+
+            <!-- Estado -->
+            <td class="py-3 px-4 text-center">
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+                    [ngClass]="{
+                      'bg-green-100 text-green-800': item.estadoArticulo === 'NUEVO',
+                      'bg-blue-100 text-blue-800': item.estadoArticulo === 'USADO_BUENO',
+                      'bg-yellow-100 text-yellow-800': item.estadoArticulo === 'USADO_REGULAR',
+                      'bg-orange-100 text-orange-800': item.estadoArticulo === 'REPARAR'
+                    }">
+                {{ obtenerTextoEstado(item.estadoArticulo) }}
+              </span>
+            </td>
+
+            <!-- Vencimiento -->
+            <td class="py-3 px-4 text-sm text-slate-600">
+              {{ item.fechaVencimiento || '—' }}
+            </td>
+
+            <!-- Descripción -->
+            <td class="py-3 px-4">
+              <p class="text-sm text-slate-600 max-w-xs truncate" [title]="item.descripcion || ''">
+                {{ item.descripcion || '—' }}
+              </p>
+            </td>
+
+            <!-- Acciones -->
+            <td class="py-3 px-4">
+              <div class="flex items-center justify-center gap-2">
+                <button type="button"
+                        (click)="editarArticulo(i)"
+                        class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                        title="Editar">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                </button>
+                <button type="button"
+                        (click)="eliminarArticulo(i)"
+                        class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                        title="Eliminar">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Botón enviar donación -->
+    <div *ngIf="articulosAgregados().length > 0" class="mt-6 flex items-center justify-between pt-4 border-t border-slate-200">
+      <div class="text-sm text-slate-600">
+        <span class="font-medium">Total:</span> 
+        {{ obtenerCantidadArticulos() }} artículo(s), 
+        {{ calcularTotalUnidades() }} unidad(es)
+      </div>
+      <button type="button"
+              (click)="enviarDonacion()"
+              [disabled]="isSubmitting()"
+              class="bg-green-600 hover:bg-green-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-8 rounded-lg transition flex items-center gap-2 shadow-lg hover:shadow-xl">
+        <svg *ngIf="!isSubmitting()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+        <svg *ngIf="isSubmitting()" class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        {{ isSubmitting() ? 'Guardando...' : 'Completar Donación' }}
+      </button>
+    </div>
+  </div>
+</div>

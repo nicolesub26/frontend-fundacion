@@ -1,0 +1,246 @@
+<div class="space-y-6">
+
+  <!-- HEADER: degradado azul + KPIs -->
+  <div class="rounded-2xl p-6 shadow-lg text-white bg-gradient-to-r from-[#0d6efd] via-[#0aa3e3] to-[#0aa39a]">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-semibold">Gestión de Beneficiarios</h1>
+        <p class="opacity-90">Administra los beneficiarios registrados en el sistema</p>
+      </div>
+
+      <!-- KPIs -->
+      <div class="flex items-center gap-4">
+        <div class="rounded-xl px-6 py-3 border border-white/20 bg-white/10 text-center">
+          <div class="text-2xl font-semibold leading-none">{{ kpiTotal }}</div>
+          <div class="text-xs opacity-90">Total</div>
+        </div>
+        <div class="rounded-xl px-6 py-3 border border-white/20 bg-white/10 text-center">
+          <div class="text-2xl font-semibold leading-none">{{ kpiActivos }}</div>
+          <div class="text-xs opacity-90">Activos</div>
+        </div>
+        <div class="rounded-xl px-6 py-3 border border-white/20 bg-white/10 text-center">
+          <div class="text-2xl font-semibold leading-none">{{ kpiInactivos }}</div>
+          <div class="text-xs opacity-90">Inactivos</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTROS + ACCIONES -->
+  <div class="bg-white rounded-2xl shadow p-4">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+
+      <!-- Buscar -->
+      <div class="md:col-span-5">
+        <div class="relative">
+          <input
+            class="w-full rounded-xl border border-gray-300 pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#0d6efd]"
+            type="text" placeholder="Buscar beneficiarios..."
+            [(ngModel)]="fQ" (keyup.enter)="cargar()" />
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 select-none text-gray-400">🔍</span>
+        </div>
+      </div>
+
+      <!-- Estado -->
+      <div class="md:col-span-3">
+        <select
+          class="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#0d6efd]"
+          [(ngModel)]="fEstado" (change)="cargar()">
+          <option value="">Todos los estados</option>
+          <option [ngValue]="1">Activos</option>
+          <option [ngValue]="0">Inactivos</option>
+        </select>
+      </div>
+
+      <!-- Tipo -->
+      <div class="md:col-span-2">
+        <select
+          class="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#0d6efd]"
+          [(ngModel)]="fTipo" (change)="cargar()">
+          <option value="">Todos los tipos</option>
+          <option *ngFor="let t of tipos" [ngValue]="t.idTipoBeneficiario">{{ t.descripcion }}</option>
+        </select>
+      </div>
+
+      <!-- Acciones -->
+      <div class="md:col-span-2 flex gap-2">
+        <button class="w-full inline-flex items-center justify-center rounded-xl bg-gray-100 text-gray-700 px-4 py-2
+                       hover:bg-gray-200 border border-gray-200 transition"
+                (click)="limpiarFiltros()">✖ Limpiar</button>
+      </div>
+
+      <div class="md:col-span-12 flex flex-wrap gap-3 justify-end">
+        <button class="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2 text-white
+                       hover:bg-emerald-700 transition">
+          <span class="mr-2">🧾</span> Exportar
+        </button>
+        <button class="inline-flex items-center justify-center rounded-xl bg-[#1f80ff] px-4 py-2 text-white
+                       hover:bg-[#1a6ee0] transition"
+                (click)="openCrear()">
+          <span class="mr-2">＋</span> Nuevo Beneficiario
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLA -->
+  <div class="bg-white rounded-2xl shadow overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead class="bg-[#1687e0] text-white">
+        <tr>
+          <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider w-16">ID</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Nombre</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">CI</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Teléfono</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Tipo</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Estado</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Fecha creación</th>
+          <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider">Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody *ngIf="!loading && items.length; else tableState">
+        <tr *ngFor="let it of items; trackBy: trackById" class="border-b last:border-b-0">
+          <td class="px-4 py-3">{{ it.idBeneficiario }}</td>
+          <td class="px-4 py-3 font-medium">{{ it.nombre }} {{ it.apellido }}</td>
+          <td class="px-4 py-3">{{ it.ci || '-' }}</td>
+          <td class="px-4 py-3">{{ it.telefono || '-' }}</td>
+          <td class="px-4 py-3">{{ it.tipoBeneficiarioDescripcion || '-' }}</td>
+          <td class="px-4 py-3">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                  [ngClass]="it.estado === 1
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-rose-100 text-rose-700'">
+              {{ it.estado === 1 ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td class="px-4 py-3">{{ it.fechaCreacion | date:'d/M/yyyy' }}</td>
+          <td class="px-4 py-3 text-right">
+            <div class="flex justify-end gap-2">
+              <button class="inline-flex items-center justify-center rounded-lg px-3 py-1 border
+                             border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100 transition"
+                      (click)="openEditar(it)" title="Editar">✏️</button>
+
+              <button *ngIf="it.estado === 1"
+                      class="inline-flex items-center justify-center rounded-lg px-3 py-1 border
+                             border-yellow-200 bg-yellow-50 text-yellow-700 hover:bg-yellow-100 transition"
+                      (click)="toggleEstado(it)" title="Deshabilitar">🚫</button>
+
+              <button *ngIf="it.estado === 0"
+                      class="inline-flex items-center justify-center rounded-lg px-3 py-1 border
+                             border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition"
+                      (click)="toggleEstado(it)" title="Habilitar">✅</button>
+
+              <button class="inline-flex items-center justify-center rounded-lg px-3 py-1 border
+                             border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 transition"
+                      (click)="toggleEstado(it)" title="Eliminar (lógico)">🗑️</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <ng-template #tableState>
+      <div class="p-6 text-center text-gray-500">
+        <ng-container *ngIf="loading; else noData">Cargando...</ng-container>
+        <ng-template #noData>No hay registros.</ng-template>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- TOAST -->
+  <div *ngIf="toast.show"
+       class="fixed bottom-4 right-4 px-4 py-2 rounded-lg shadow text-white transition"
+       [ngClass]="{
+         'bg-emerald-600': toast.type==='success',
+         'bg-sky-600': toast.type==='info',
+         'bg-rose-600': toast.type==='error'
+       }">
+    {{ toast.message }}
+  </div>
+
+  <!-- MODAL crear/editar -->
+  <div *ngIf="modalOpen" class="fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/40" (click)="cerrarModal()"></div>
+    <div class="relative w-full max-w-2xl mx-4 bg-white rounded-2xl shadow-xl p-6">
+      <h2 class="text-lg font-semibold mb-4">
+        {{ editingId ? 'Editar beneficiario' : 'Nuevo beneficiario' }}
+      </h2>
+
+      <form [formGroup]="form" (ngSubmit)="guardar()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block mb-1 text-sm font-medium text-gray-700">Nombre *</label>
+          <input class="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#0d6efd]"
+                 formControlName="nombre" placeholder="Nombre" />
+          <p *ngIf="isInvalid('nombre')" class="mt-1 text-xs text-rose-600">Nombre inválido.</p>
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium text-gray-700">Apellido *</label>
+          <input class="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#0d6efd]"
+                 formControlName="apellido" placeholder="Apellido" />
+          <p *ngIf="isInvalid('apellido')" class="mt-1 text-xs text-rose-600">Apellido inválido.</p>
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium text-gray-700">CI</label>
+          <input class="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#0d6efd]"
+                 formControlName="ci" placeholder="Ej: 1234567-1" />
+          <p *ngIf="isInvalid('ci')" class="mt-1 text-xs text-rose-600">CI inválido.</p>
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium text-gray-700">Teléfono</label>
+          <input class="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#0d6efd]"
+                 formControlName="telefono" placeholder="Solo dígitos (7-15)" />
+          <p *ngIf="isInvalid('telefono')" class="mt-1 text-xs text-rose-600">Teléfono inválido.</p>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block mb-1 text-sm font-medium text-gray-700">Dirección</label>
+          <input class="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#0d6efd]"
+                 formControlName="direccion" placeholder="Dirección" />
+          <p *ngIf="isInvalid('direccion')" class="mt-1 text-xs text-rose-600">Máx. 200 caracteres.</p>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block mb-1 text-sm font-medium text-gray-700">Situación socioeconómica</label>
+          <textarea class="w-full rounded-xl border border-gray-300 px-3 py-2 min-h-[88px] focus:outline-none focus:ring-2 focus:ring-[#0d6efd]"
+                    formControlName="situacionSocioeconomica" placeholder="Descripción"></textarea>
+          <p *ngIf="isInvalid('situacionSocioeconomica')" class="mt-1 text-xs text-rose-600">Máx. 500 caracteres.</p>
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium text-gray-700">Fecha registro</label>
+          <input type="date"
+                 class="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#0d6efd]"
+                 formControlName="fechaRegistro" />
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium text-gray-700">Tipo de beneficiario *</label>
+          <select class="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#0d6efd]"
+                  formControlName="idTipoBeneficiario">
+            <option [ngValue]="null">Selecciona...</option>
+            <option *ngFor="let t of tipos" [ngValue]="t.idTipoBeneficiario">{{ t.descripcion }}</option>
+          </select>
+          <p *ngIf="isInvalid('idTipoBeneficiario')" class="mt-1 text-xs text-rose-600">Obligatorio.</p>
+        </div>
+
+        <div class="md:col-span-2 flex justify-end gap-2 mt-2">
+          <button type="button"
+                  class="inline-flex items-center justify-center rounded-xl bg-gray-100 text-gray-700 px-4 py-2
+                         hover:bg-gray-200 border border-gray-200 transition"
+                  (click)="cerrarModal()">Cancelar</button>
+          <button type="submit"
+                  class="inline-flex items-center justify-center rounded-xl bg-[#1f80ff] px-4 py-2 text-white
+                         hover:bg-[#1a6ee0] transition"
+                  [disabled]="form.invalid">
+            {{ editingId ? 'Actualizar' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,27 @@
+.sidebar {
+    @apply bg-purple-500 text-white w-64 h-full transition-all duration-300;
+  }
+  
+  .sidebar.collapsed {
+    @apply w-0;
+  }
+  
+  .nav-container {
+    @apply p-4;
+  }
+  
+  .menu-container {
+    @apply space-y-4;
+  }
+  
+  .menu-section {
+    @apply space-y-2;
+  }
+  
+  .section-title {
+    @apply text-lg font-semibold;
+  }
+  
+  .menu-item {
+    @apply block px-4 py-2 hover:bg-purple-600 rounded;
+  }

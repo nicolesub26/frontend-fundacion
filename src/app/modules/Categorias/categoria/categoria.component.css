@@ -1,0 +1,17 @@
+.container {
+    max-width: 800px;
+    margin: auto;
+  }
+  
+  h3 {
+    background-color: #f4f4f4;
+    padding: 10px;
+  }
+  
+  button {
+    margin: 5px;
+    cursor: pointer;
+  }
+  
+
+  

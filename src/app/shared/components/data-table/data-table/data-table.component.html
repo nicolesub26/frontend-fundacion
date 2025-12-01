@@ -1,0 +1,48 @@
+<div class="w-full bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
+  <table class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-purple-100">
+      <tr>
+        <th *ngFor="let column of columns" 
+            class="px-4 py-3 text-left text-gray-800 text-sm font-semibold md:px-6 md:py-3 md:text-base
+                   hidden sm:table-cell"> <!-- Oculto en móvil -->
+          {{ column.header }}
+        </th>
+        <th *ngIf="actions" 
+            class="px-4 py-3 text-right text-gray-800 text-sm font-semibold md:px-6 md:py-3 md:text-base
+                   hidden sm:table-cell"> <!-- Oculto en móvil -->
+          Acciones
+        </th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200">
+      <tr *ngFor="let item of paginatedData" class="hover:bg-gray-50">
+        <td *ngFor="let column of columns" 
+            class="px-4 py-3 text-gray-700 text-sm md:px-6 md:py-4 md:text-base
+                   block sm:table-cell"> <!-- Celda completa en desktop -->
+          <span class="font-semibold sm:hidden">{{column.header}}: </span>
+          {{ item[column.field] }}
+        </td>
+        <td *ngIf="actions" 
+            class="px-4 py-3 text-right text-sm md:px-6 md:py-4 md:text-base
+                   block sm:table-cell">
+          <ng-container *ngTemplateOutlet="actions; context: { $implicit: item }"></ng-container>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Paginación (igual que antes) -->
+  <div class="flex justify-center mt-4 pb-2">
+    <button
+      *ngFor="let page of [].constructor(totalPages); let i = index"
+      class="px-3 py-1 mx-1 border rounded transition-colors duration-200"
+      [class.bg-purple-500]="currentPage === i + 1"
+      [class.text-white]="currentPage === i + 1"
+      [class.hover:bg-purple-400]="currentPage === i + 1"
+      [class.hover:bg-gray-100]="currentPage !== i + 1"
+      (click)="goToPage(i + 1)"
+    >
+      {{ i + 1 }}
+    </button>
+  </div>
+</div>

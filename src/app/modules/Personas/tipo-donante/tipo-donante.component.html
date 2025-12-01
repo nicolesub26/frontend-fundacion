@@ -1,0 +1,197 @@
+<div class="p-4 md:p-6 space-y-6">
+  <!-- Header -->
+  <div class="rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white p-6 shadow">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl md:text-3xl font-semibold">Gestión de Tipos de Donante</h1>
+        <p class="opacity-90">Administra las categorías de donantes de la fundación</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button (click)="exportarCSV()"
+                class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 shadow text-white">
+          Exportar
+        </button>
+        <button (click)="abrirNuevo()"
+                class="px-4 py-2 rounded-xl bg-white/90 text-indigo-700 hover:bg-white shadow font-medium">
+          Nuevo Tipo
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-6 grid grid-cols-3 gap-4 text-center">
+      <div class="bg-white/15 rounded-xl p-4">
+        <div class="text-3xl font-bold">{{ total }}</div>
+        <div class="text-sm opacity-90">Total</div>
+      </div>
+      <div class="bg-white/15 rounded-xl p-4">
+        <div class="text-3xl font-bold">{{ activos }}</div>
+        <div class="text-sm opacity-90">Activos</div>
+      </div>
+      <div class="bg-white/15 rounded-xl p-4">
+        <div class="text-3xl font-bold">{{ inactivos }}</div>
+        <div class="text-sm opacity-90">Inactivos</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div class="col-span-2">
+        <input
+          type="text"
+          [(ngModel)]="search"
+          (ngModelChange)="onSearchChange()"
+          placeholder="Buscar por descripción, características o beneficios..."
+          class="w-full rounded-xl border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+      </div>
+      <div>
+        <select
+          class="w-full rounded-xl border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          [ngModel]="estadoFiltro"
+          (ngModelChange)="onEstadoChange($event)"
+        >
+          <option value="all">Todos los estados</option>
+          <option value="1">Activos</option>
+          <option value="0">Inactivos</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <button (click)="limpiarFiltros()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200">
+        Limpiar Filtros
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+    <div class="overflow-auto">
+      <table class="min-w-full">
+        <thead class="bg-indigo-500 text-white">
+          <tr>
+            <th class="text-left text-xs font-semibold uppercase tracking-wider px-4 py-3">ID</th>
+            <th class="text-left text-xs font-semibold uppercase tracking-wider px-4 py-3">Descripción</th>
+            <th class="text-left text-xs font-semibold uppercase tracking-wider px-4 py-3">Características</th>
+            <th class="text-left text-xs font-semibold uppercase tracking-wider px-4 py-3">Beneficios</th>
+            <th class="text-left text-xs font-semibold uppercase tracking-wider px-4 py-3">Estado</th>
+            <th class="text-right text-xs font-semibold uppercase tracking-wider px-4 py-3">Acciones</th>
+          </tr>
+        </thead>
+        <tbody *ngIf="!loading && filtrados.length > 0; else empty">
+          <tr *ngFor="let t of filtrados; trackBy: trackById" class="border-b last:border-b-0">
+            <td class="px-4 py-3 text-slate-700">{{ t.idTipoDonante }}</td>
+            <td class="px-4 py-3 font-medium text-slate-900">{{ t.descripcion }}</td>
+            <td class="px-4 py-3 text-slate-700">{{ t.caracteristicas || '—' }}</td>
+            <td class="px-4 py-3 text-slate-700">{{ t.beneficios || '—' }}</td>
+            <td class="px-4 py-3">
+              <span
+                class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm"
+                [ngClass]="t.estado === 1 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'">
+                <span class="h-2 w-2 rounded-full"
+                      [ngClass]="t.estado === 1 ? 'bg-emerald-500' : 'bg-rose-500'"></span>
+                {{ t.estado === 1 ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-right">
+              <div class="flex justify-end gap-2">
+                <button (click)="abrirEditar(t)"
+                        class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200">
+                  Editar
+                </button>
+                <button (click)="toggleEstado(t)"
+                        [ngClass]="t.estado === 1 ? 'bg-rose-100 hover:bg-rose-200 text-rose-700' : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-700'"
+                        class="px-3 py-1.5 rounded-lg">
+                  {{ t.estado === 1 ? 'Deshabilitar' : 'Habilitar' }}
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <ng-template #empty>
+        <div class="p-10 text-center" *ngIf="!loading">
+          <p class="text-slate-700 font-medium">No hay tipos de donante</p>
+          <p class="text-slate-500">Comienza agregando tu primer tipo</p>
+          <button (click)="abrirNuevo()" class="mt-4 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">
+            Agregar Tipo
+          </button>
+        </div>
+        <div class="p-10 text-center" *ngIf="loading">
+          <span class="animate-pulse text-slate-500">Cargando...</span>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
+       *ngIf="showModal">
+    <div class="bg-white w-full max-w-xl rounded-2xl shadow-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold">
+          {{ formMode === 'create' ? 'Nuevo Tipo de Donante' : 'Editar Tipo de Donante' }}
+        </h2>
+        <button (click)="cerrarModal()" class="text-slate-500 hover:text-slate-700">✕</button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Descripción *</label>
+          <input type="text" formControlName="descripcion"
+                 class="w-full rounded-xl border px-4 py-2 focus:outline-none focus:ring-2"
+                 [ngClass]="isInvalid('descripcion') ? 'border-rose-400 focus:ring-rose-300' : 'border-slate-300 focus:ring-indigo-300'"/>
+          <div class="text-sm text-rose-600 mt-1" *ngIf="isInvalid('descripcion')">
+            La descripción es obligatoria (2-100 caracteres).
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Características</label>
+          <textarea rows="3" formControlName="caracteristicas"
+                    class="w-full rounded-xl border px-4 py-2 focus:outline-none focus:ring-2"
+                    [ngClass]="isInvalid('caracteristicas') ? 'border-rose-400 focus:ring-rose-300' : 'border-slate-300 focus:ring-indigo-300'"></textarea>
+          <div class="text-sm text-rose-600 mt-1" *ngIf="isInvalid('caracteristicas')">
+            Máximo 200 caracteres.
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Beneficios</label>
+          <input type="text" formControlName="beneficios"
+                 class="w-full rounded-xl border px-4 py-2 focus:outline-none focus:ring-2"
+                 [ngClass]="isInvalid('beneficios') ? 'border-rose-400 focus:ring-rose-300' : 'border-slate-300 focus:ring-indigo-300'"/>
+          <div class="text-sm text-rose-600 mt-1" *ngIf="isInvalid('beneficios')">
+            Máximo 100 caracteres.
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button type="button" (click)="cerrarModal()"
+                  class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200">
+            Cancelar
+          </button>
+          <button type="submit"
+                  class="px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700"
+                  [disabled]="form.invalid">
+            {{ formMode === 'create' ? 'Guardar' : 'Actualizar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div *ngIf="toast.show"
+       class="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl shadow-lg text-white"
+       [ngClass]="{
+         'bg-emerald-600': toast.type === 'success',
+         'bg-rose-600': toast.type === 'error',
+         'bg-slate-800': toast.type === 'info'
+       }">
+    {{ toast.message }}
+  </div>
+</div>
