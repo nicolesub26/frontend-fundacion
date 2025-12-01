@@ -1,0 +1,300 @@
+<!-- Archivo: rol-menu.component.html (actualizado) -->
+<div class="min-h-screen bg-gradient-to-br from-sky-50 to-blue-100 p-6">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-800 flex items-center gap-3">
+            <svg class="w-8 h-8 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Asignar Menús a Roles
+          </h1>
+          <p class="text-gray-600 mt-1">Gestiona los menús disponibles para cada rol</p>
+        </div>
+
+        <!-- Botón Crear Rol -->
+        <div class="flex items-center gap-3">
+          <button (click)="abrirCrearRol()" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg shadow-sm flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Crear Rol
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros y búsqueda -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Búsqueda -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Buscar Rol</label>
+          <div class="relative">
+            <input
+              type="text"
+              [(ngModel)]="busqueda"
+              placeholder="Buscar por nombre o descripción..."
+              class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+            />
+            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Filtro de estado -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Filtrar por Estado</label>
+          <select
+            [(ngModel)]="filtroEstado"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+          >
+            <option value="todos">Todos los roles</option>
+            <option value="activos">Solo activos</option>
+            <option value="inactivos">Solo inactivos</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid de roles -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div 
+        *ngFor="let rol of rolesFiltrados"
+        class="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden"
+      >
+        <div class="bg-gradient-to-r from-sky-500 to-blue-600 px-6 py-4">
+          <h3 class="text-xl font-bold text-white">{{ rol.nombre }}</h3>
+          <p class="text-sky-100 text-sm mt-1">{{ rol.descripcion || 'Sin descripción' }}</p>
+        </div>
+        
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-4">
+            <span [ngClass]="getEstadoClass(rol.estado)" class="px-3 py-1 text-xs font-semibold rounded-full">
+              {{ getEstadoBadge(rol.estado) }}
+            </span>
+            <span class="text-sm text-gray-500">ID: {{ rol.idRol }}</span>
+          </div>
+
+          <div class="flex gap-2">
+            <button
+              (click)="seleccionarRol(rol)"
+              class="flex-1 px-4 py-3 bg-sky-500 hover:bg-sky-600 text-white font-medium rounded-lg transition-colors duration-150 shadow-sm flex items-center justify-center gap-2"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Gestionar Menús
+            </button>
+
+            <!-- Botón Editar -->
+            <button (click)="abrirEditarRol(rol)" class="px-4 py-3 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg shadow-sm flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5h6M11 9h6M11 13h6M5 7h.01M5 11h.01M5 15h.01"/></svg>
+              Editar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sin resultados -->
+    <div *ngIf="rolesFiltrados.length === 0 && !cargando" class="bg-white rounded-lg shadow-md p-12 text-center">
+      <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      <p class="text-gray-500 text-lg">No se encontraron roles</p>
+    </div>
+
+    <!-- Cargando -->
+    <div *ngIf="cargando && !rolSeleccionado" class="bg-white rounded-lg shadow-md p-12 text-center">
+      <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-sky-500 border-t-transparent"></div>
+      <p class="text-gray-600 mt-4">Cargando datos...</p>
+    </div>
+
+    <!-- Modal de gestión de menús -->
+    <div *ngIf="rolSeleccionado" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <!-- Header del modal -->
+        <div class="bg-gradient-to-r from-sky-500 to-blue-600 px-6 py-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-xl font-bold text-white">Gestionar Menús</h3>
+              <p class="text-sky-100 text-sm mt-1">Rol: {{ rolSeleccionado.nombre }}</p>
+            </div>
+            <button
+              (click)="cerrarModal()"
+              class="text-white hover:text-sky-100 transition-colors"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Contenido del modal -->
+        <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+          <!-- Menús asignados -->
+          <div class="mb-8">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Menús Asignados ({{ menusDelRol.length }})
+            </h4>
+            
+            <div *ngIf="menusDelRol.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div *ngFor="let menu of menusDelRol" class="border-2 border-green-200 bg-green-50 rounded-lg p-4">
+                <div class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <h5 class="text-base font-semibold text-gray-800 flex items-center gap-2">
+                      <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      {{ menu.nombre }}
+                    </h5>
+                    <p class="text-xs text-gray-600 mt-1 font-mono">{{ menu.direccion }}</p>
+                  </div>
+                  <button
+                    (click)="desasignarMenu(menu.idMenu)"
+                    class="ml-3 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-medium rounded-lg transition-colors shadow-sm flex items-center gap-1"
+                  >
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Quitar
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="menusDelRol.length === 0" class="text-center py-8 bg-gray-50 rounded-lg">
+              <svg class="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+              </svg>
+              <p class="text-gray-500 text-sm">No hay menús asignados a este rol</p>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="border-t border-gray-200 my-6"></div>
+
+          <!-- Menús disponibles -->
+          <div>
+            <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Menús Disponibles
+            </h4>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div 
+                *ngFor="let menu of menusDisponibles" 
+                [ngClass]="{
+                  'border-gray-200 bg-white': !tieneMenu(menu.idMenu),
+                  'border-gray-300 bg-gray-50 opacity-50': tieneMenu(menu.idMenu)
+                }"
+                class="border rounded-lg p-4"
+              >
+                <div class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <h5 class="text-base font-semibold text-gray-800 flex items-center gap-2">
+                      <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      {{ menu.nombre }}
+                    </h5>
+                    <p class="text-xs text-gray-600 mt-1 font-mono">{{ menu.direccion }}</p>
+                  </div>
+                  <button
+                    *ngIf="!tieneMenu(menu.idMenu)"
+                    (click)="asignarMenu(menu.idMenu)"
+                    class="ml-3 px-3 py-1.5 bg-sky-500 hover:bg-sky-600 text-white text-xs font-medium rounded-lg transition-colors shadow-sm flex items-center gap-1"
+                  >
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Asignar
+                  </button>
+                  <span
+                    *ngIf="tieneMenu(menu.idMenu)"
+                    class="ml-3 px-3 py-1.5 bg-gray-300 text-gray-600 text-xs font-medium rounded-lg flex items-center gap-1"
+                  >
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Asignado
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sin menús disponibles -->
+            <div *ngIf="menusDisponibles.length === 0" class="text-center py-8 bg-gray-50 rounded-lg">
+              <svg class="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p class="text-gray-500 text-sm">No hay menús disponibles</p>
+            </div>
+          </div>
+
+          <!-- Cargando en modal -->
+          <div *ngIf="cargando" class="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center">
+            <div class="text-center">
+              <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-sky-500 border-t-transparent"></div>
+              <p class="text-gray-600 mt-4">Procesando...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer del modal -->
+        <div class="bg-gray-50 px-6 py-4 flex justify-end">
+          <button
+            (click)="cerrarModal()"
+            class="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors shadow-sm"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Crear / Editar Rol -->
+    <div *ngIf="showFormModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-lg shadow-2xl w-full max-w-lg overflow-hidden">
+        <div class="bg-gradient-to-r from-green-500 to-green-600 px-6 py-4 flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-bold text-white">{{ isEditMode ? 'Editar Rol' : 'Crear Rol' }}</h3>
+            <p class="text-green-100 text-sm mt-1">{{ isEditMode ? 'Actualiza la información del rol' : 'Rellena los datos para crear un nuevo rol' }}</p>
+          </div>
+          <button (click)="cerrarForm()" class="text-white hover:text-green-100">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div class="p-6">
+          <label class="block text-sm font-medium text-gray-700">Nombre</label>
+          <input type="text" [(ngModel)]="formRol.nombre" class="w-full px-4 py-2 border rounded-lg mt-2 mb-4" placeholder="Nombre del rol" />
+
+          <label class="block text-sm font-medium text-gray-700">Descripción</label>
+          <textarea [(ngModel)]="formRol.descripcion" class="w-full px-4 py-2 border rounded-lg mt-2 mb-4" rows="3" placeholder="Descripción (opcional)"></textarea>
+
+          <label class="block text-sm font-medium text-gray-700">Estado</label>
+          <select [(ngModel)]="formRol.estado" class="w-full px-4 py-2 border rounded-lg mt-2 mb-4">
+            <option [ngValue]="1">Activo</option>
+            <option [ngValue]="0">Inactivo</option>
+          </select>
+
+          <div class="flex justify-end gap-2">
+            <button (click)="cerrarForm()" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg">Cancelar</button>
+            <button (click)="guardarRol()" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg">{{ isEditMode ? 'Guardar cambios' : 'Crear rol' }}</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

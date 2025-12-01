@@ -1,0 +1,132 @@
+<div class="max-w-7xl mx-auto space-y-5">
+  <!-- Header + KPIs -->
+  <div class="rounded-2xl overflow-hidden shadow">
+    <div class="bg-gradient-to-r from-blue-600 to-sky-500 text-white px-6 py-6 flex flex-wrap gap-4 items-center justify-between">
+      <div>
+        <h2 class="text-2xl font-semibold">Reportes de Donación</h2>
+        <p class="opacity-90">Filtra por tipo, estado y fechas</p>
+      </div>
+      <div class="flex gap-3">
+        <div class="bg-white/15 px-4 py-2 rounded-xl text-center min-w-[90px]">
+          <div class="text-sm opacity-90">Total</div>
+          <div class="text-lg font-semibold">{{ kpiTotal() }}</div>
+        </div>
+        <div class="bg-white/15 px-4 py-2 rounded-xl text-center min-w-[90px]">
+          <div class="text-sm opacity-90">Activas</div>
+          <div class="text-lg font-semibold">{{ kpiActivas() }}</div>
+        </div>
+        <div class="bg-white/15 px-4 py-2 rounded-xl text-center min-w-[90px]">
+          <div class="text-sm opacity-90">Inactivas</div>
+          <div class="text-lg font-semibold">{{ kpiInactivas() }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="bg-white px-6 py-5">
+      <form [formGroup]="form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+        <div class="lg:col-span-2">
+          <label class="block text-sm font-medium text-slate-700 mb-1">Tipo de donación</label>
+          <select formControlName="idTipoDonacion"
+                  class="w-full rounded-lg border-slate-300 bg-white focus:border-blue-600 focus:ring-blue-600">
+            <option [ngValue]="null">Todos</option>
+            <option *ngFor="let t of tipos()" [value]="t.idTipoDonacion">{{ t.descripcion }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Estado</label>
+          <select formControlName="estado"
+                  class="w-full rounded-lg border-slate-300 bg-white focus:border-blue-600 focus:ring-blue-600">
+            <option [ngValue]="null">Todos</option>
+            <option [value]="1">Activo</option>
+            <option [value]="0">Inactivo</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Desde</label>
+          <input type="date" formControlName="desde"
+                 class="w-full rounded-lg border-slate-300 focus:border-blue-600 focus:ring-blue-600">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Hasta</label>
+          <input type="date" formControlName="hasta"
+                 class="w-full rounded-lg border-slate-300 focus:border-blue-600 focus:ring-blue-600">
+        </div>
+        <div class="flex gap-2 lg:col-span-6 lg:justify-end">
+          <button type="button" class="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700" (click)="buscar(0)">
+            Buscar
+          </button>
+          <button type="button" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200" (click)="limpiar()">
+            Limpiar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="bg-white rounded-2xl shadow overflow-hidden">
+    <div class="bg-gradient-to-r from-blue-600 to-sky-500 text-white px-6 py-3 text-sm font-semibold">Resultados</div>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-slate-200">
+        <thead class="bg-slate-50">
+          <tr class="text-left text-xs font-semibold text-slate-600">
+            <th class="px-6 py-3">Fecha</th>
+            <th class="px-6 py-3">Donante</th>
+            <th class="px-6 py-3">Tipo</th>
+            <th class="px-6 py-3">Registrado por</th>
+            <th class="px-6 py-3">Estado</th>
+            <th class="px-6 py-3 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr *ngFor="let r of data().content" class="text-sm">
+            <td class="px-6 py-3 text-slate-800">{{ r.fechaDonacion | date:'shortDate' }}</td>
+            <td class="px-6 py-3">
+              <div class="font-medium text-slate-800">{{ r.nombreDonante || '—' }}</div>
+            </td>
+            <td class="px-6 py-3">{{ r.descripcionTipoDonacion || '—' }}</td>
+            <td class="px-6 py-3">{{ r.nombreEmpleado || '—' }}</td>
+            <td class="px-6 py-3">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs"
+                    [class.bg-emerald-100]="r.estado===1" [class.text-emerald-700]="r.estado===1"
+                    [class.bg-rose-100]="r.estado===0" [class.text-rose-700]="r.estado===0">
+                {{ r.estado===1 ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+            <td class="px-6 py-3">
+              <div class="flex gap-2 justify-end">
+                <!-- ejemplo: ir a crear detalle efectivo/artículo según flujo que manejes -->
+                <a class="px-3 py-1 text-xs rounded-lg bg-sky-100 text-sky-700 hover:bg-sky-200"
+                   [routerLink]="['/donacion-efectivo/nuevo', r.idDonacion]">Efectivo</a>
+                <a class="px-3 py-1 text-xs rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200"
+                   [routerLink]="['/donacion-articulo/nuevo', r.idDonacion]">Artículo</a>
+              </div>
+            </td>
+          </tr>
+
+          <tr *ngIf="!data().content.length">
+            <td colspan="6" class="px-6 py-6 text-center text-slate-500">Sin resultados</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="px-6 py-4 flex items-center justify-between">
+      <div class="text-sm text-slate-500">
+        Mostrando {{ data().content.length }} de {{ data().totalElements }} registros
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-50"
+                [disabled]="data().number===0" (click)="cambiarPagina(data().number-1)">Anterior</button>
+        <span class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-sm">{{ data().number+1 }}</span>
+        <button class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-50"
+                [disabled]="data().number+1>=data().totalPages" (click)="cambiarPagina(data().number+1)">Siguiente</button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="errMsg()" class="text-sm text-red-600">{{ errMsg() }}</div>
+</div>

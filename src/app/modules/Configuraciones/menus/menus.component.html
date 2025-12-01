@@ -1,0 +1,65 @@
+<div class="container">
+  <h2>Gestión de Menús</h2>
+
+  <button class="btn-primary" (click)="openCreateModal()">+ Nuevo Menú</button>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Dirección</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let m of menus">
+        <td>{{ m.idMenu }}</td>
+        <td>{{ m.nombre }}</td>
+        <td>{{ m.direccion }}</td>
+        <td>
+          <span [ngClass]="m.estado === 1 ? 'activo' : 'inactivo'">
+            {{ m.estado === 1 ? 'ACTIVO' : 'INACTIVO' }}
+          </span>
+        </td>
+        <td>
+          <button class="btn-sm" (click)="openEditModal(m)">Editar</button>
+          <button class="btn-danger" (click)="deleteMenu(m.idMenu)">Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- MODAL -->
+<div class="modal-backdrop" *ngIf="showModal"></div>
+
+<div class="modal" *ngIf="showModal">
+  <div class="modal-header">
+    <h3>{{ modalTitle }}</h3>
+    <button class="close" (click)="closeModal()">✕</button>
+  </div>
+
+  <form [formGroup]="menuForm" (ngSubmit)="submitForm()" class="modal-body">
+    <label>Nombre</label>
+    <input formControlName="nombre" type="text" required>
+
+    <label>Dirección</label>
+    <input formControlName="direccion" type="text" required>
+
+    <label>Estado</label>
+    <select formControlName="estado">
+      <option [value]="1">ACTIVO</option>
+      <option [value]="0">INACTIVO</option>
+    </select>
+
+    <div class="modal-actions">
+      <button type="submit" class="btn-primary">
+        {{ isEditing ? 'Actualizar' : 'Crear' }}
+      </button>
+      <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
+    </div>
+  </form>
+</div>

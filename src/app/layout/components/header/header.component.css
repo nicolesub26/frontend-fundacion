@@ -1,0 +1,12 @@
+.header {
+    @apply bg-purple-600 h-16 flex items-center px-4 text-white;
+  }
+  
+  .menu-button {
+    @apply p-2;
+  }
+  
+  .title {
+    @apply ml-4 text-xl font-bold;
+  }
+  

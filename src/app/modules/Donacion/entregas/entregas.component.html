@@ -1,0 +1,397 @@
+<div class="entregas-container">
+
+  <!-- ==================== ENCABEZADO ==================== -->
+  <div class="header-section">
+    <h2>Gestión de Entregas</h2>
+    <button class="btn btn-primary" (click)="abrirModalCrear()">
+      <i class="fas fa-plus"></i> Nueva Entrega
+    </button>
+  </div>
+
+  <!-- ==================== ESTADÍSTICAS ==================== -->
+  <div class="estadisticas-cards" *ngIf="estadisticas">
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fas fa-box"></i></div>
+      <div class="stat-info">
+        <h4>Total Entregas</h4>
+        <p class="stat-number">{{ estadisticas.totalEntregas }}</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon success"><i class="fas fa-check-circle"></i></div>
+      <div class="stat-info">
+        <h4>Entregas Activas</h4>
+        <p class="stat-number">{{ estadisticas.entregasActivas }}</p>
+      </div>
+    </div>
+    <!-- Note: estadisticas interface might not have entregasDelDia/Mes, checking model... -->
+    <!-- Assuming stats match what's available or hiding if not -->
+    <div class="stat-card">
+      <div class="stat-icon info"><i class="fas fa-calendar-day"></i></div>
+      <div class="stat-info">
+        <h4>Artículos Entregados</h4>
+        <p class="stat-number">{{ estadisticas.totalArticulosEntregados }}</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon warning"><i class="fas fa-calendar-week"></i></div>
+      <div class="stat-info">
+        <h4>Canceladas</h4>
+        <p class="stat-number">{{ estadisticas.entregasCanceladas }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== FILTROS ==================== -->
+  <div class="filtros-section">
+    <form [formGroup]="filtrosForm" class="filtros-form">
+      <div class="filtro-group">
+        <label>Beneficiario:</label>
+        <select formControlName="idBeneficiario">
+          <option value="">Todos</option>
+          <option *ngFor="let b of beneficiarios" [value]="b.idBeneficiario">
+            {{ b.nombre }} {{ b.apellido }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filtro-group">
+        <label>Empleado:</label>
+        <select formControlName="idEmpleado">
+          <option value="">Todos</option>
+          <option *ngFor="let e of empleados" [value]="e.id">
+            {{ e.nombre }} {{ e.apellido }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filtro-group">
+        <label>Fecha Inicio:</label>
+        <input type="date" formControlName="fechaInicio">
+      </div>
+
+      <div class="filtro-group">
+        <label>Fecha Fin:</label>
+        <input type="date" formControlName="fechaFin">
+      </div>
+
+      <div class="filtro-group">
+        <label>Estado:</label>
+        <select formControlName="estado">
+          <option value="">Todos</option>
+          <option value="1">Activo</option>
+          <option value="0">Inactivo</option>
+        </select>
+      </div>
+
+      <div class="filtro-buttons">
+        <button type="button" class="btn btn-primary" (click)="aplicarFiltros()">
+          <i class="fas fa-search"></i> Buscar
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="limpiarFiltros()">
+          <i class="fas fa-eraser"></i> Limpiar
+        </button>
+      </div>
+    </form>
+
+    <div class="quick-filters">
+      <button class="btn btn-sm" (click)="buscarPorPeriodo('dia')">
+        <i class="fas fa-calendar-day"></i> Hoy
+      </button>
+      <button class="btn btn-sm" (click)="buscarPorPeriodo('semana')">
+        <i class="fas fa-calendar-week"></i> Esta Semana
+      </button>
+      <button class="btn btn-sm" (click)="buscarPorPeriodo('mes')">
+        <i class="fas fa-calendar-alt"></i> Este Mes
+      </button>
+      <button class="btn btn-sm btn-success" (click)="exportarPDF()">
+        <i class="fas fa-file-pdf"></i> Exportar PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== TABLA DE ENTREGAS ==================== -->
+  <div class="tabla-container">
+    <div class="loading-overlay" *ngIf="loading">
+      <div class="spinner"></div>
+    </div>
+
+    <table class="tabla-entregas">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Fecha</th>
+          <th>Beneficiario</th>
+          <th>Empleado</th>
+          <th>Artículos</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let entrega of entregasPaginadas">
+          <td>{{ entrega.idEntrega }}</td>
+          <td>{{ formatearFecha(entrega.fechaEntrega) }}</td>
+          <!-- Adapted to flat properties -->
+          <td>{{ entrega.nombreBeneficiario || '-' }}</td>
+          <td>{{ entrega.nombreEmpleado || '-' }}</td>
+          <td class="text-center">
+            <span class="badge badge-info">{{ calcularTotalArticulos(entrega) }}</span>
+          </td>
+          <td>
+            <span [class]="'badge ' + claseEstado(entrega.estado)">
+              {{ textoEstado(entrega.estado) }}
+            </span>
+          </td>
+          <td class="acciones">
+            <button class="btn-icon btn-info" (click)="verDetalle(entrega)" title="Ver Detalle">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="btn-icon btn-warning" (click)="abrirModalEditar(entrega)" title="Editar">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn-icon btn-danger" (click)="eliminarEntrega(entrega)" title="Eliminar">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="entregasPaginadas.length === 0">
+          <td colspan="7" class="text-center">No se encontraron entregas</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- PAGINACIÓN -->
+    <div class="paginacion" *ngIf="totalPaginas > 1">
+      <button (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">
+        Anterior
+      </button>
+      <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
+      <button (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">
+        Siguiente
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL CREAR/EDITAR ==================== -->
+  <div class="modal" *ngIf="mostrarModal" (click)="cerrarModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ modoEdicion ? 'Editar Entrega' : 'Nueva Entrega' }}</h3>
+        <button class="btn-close" (click)="cerrarModal()">&times;</button>
+      </div>
+
+      <form [formGroup]="entregaForm" (ngSubmit)="guardarEntrega()">
+        <div class="modal-body">
+
+          <!-- INFORMACIÓN GENERAL -->
+          <div class="form-section">
+            <h4>Información General</h4>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Fecha de Entrega: <span class="required">*</span></label>
+                <input type="date" formControlName="fechaEntrega" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label>Beneficiario: <span class="required">*</span></label>
+                <select formControlName="idBeneficiario" class="form-control">
+                  <option value="">Seleccione...</option>
+                  <option *ngFor="let b of beneficiarios" [value]="b.idBeneficiario">
+                    {{ b.nombre }} {{ b.apellido }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Empleado: <span class="required">*</span></label>
+                <select formControlName="idEmpleado" class="form-control">
+                  <option value="">Seleccione...</option>
+                  <option *ngFor="let e of empleados" [value]="e.id">
+                    {{ e.nombre }} {{ e.apellido }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Voluntario removed as it is not in the interface -->
+            </div>
+
+            <div class="form-group">
+              <label>Observaciones:</label>
+              <textarea formControlName="observaciones" class="form-control" rows="3" maxlength="500"></textarea>
+            </div>
+          </div>
+
+          <!-- IMAGEN DE ENTREGA -->
+          <div class="form-section">
+            <h4>Imagen de Entrega <span class="required">*</span></h4>
+
+            <div class="imagen-upload">
+              <input type="file" id="imagen" accept="image/*" (change)="onImagenSeleccionada($event)"
+                style="display: none">
+              <label for="imagen" class="btn btn-secondary">
+                <i class="fas fa-camera"></i> Seleccionar Imagen
+              </label>
+
+              <div class="imagen-preview" *ngIf="imagenPreview">
+                <img [src]="imagenPreview" alt="Preview">
+              </div>
+            </div>
+          </div>
+
+          <!-- DETALLES DE ARTÍCULOS -->
+          <div class="form-section">
+            <div class="section-header">
+              <h4>Artículos a Entregar</h4>
+              <button type="button" class="btn btn-sm btn-success" (click)="agregarDetalle()">
+                <i class="fas fa-plus"></i> Agregar Artículo
+              </button>
+            </div>
+
+            <div formArrayName="detalles" class="detalles-list">
+              <div *ngFor="let detalle of detalles.controls; let i = index" [formGroupName]="i" class="detalle-item">
+
+                <div class="detalle-header">
+                  <h5>Artículo #{{ i + 1 }}</h5>
+                  <button type="button" class="btn-icon btn-danger" (click)="eliminarDetalle(i)"
+                    *ngIf="detalles.length > 1">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Artículo: <span class="required">*</span></label>
+                    <select formControlName="idArticulo" class="form-control">
+                      <option value="">Seleccione...</option>
+                      <option *ngFor="let a of articulos" [value]="a.idArticulo">
+                        {{ a.nombreArticulo }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Cantidad: <span class="required">*</span></label>
+                    <input type="number" formControlName="cantidad" class="form-control" min="1" max="9999">
+                  </div>
+
+                  <!-- Origen removed as it is not in the interface -->
+                </div>
+
+                <div class="form-group">
+                  <label>Observaciones:</label>
+                  <input type="text" formControlName="observaciones" class="form-control" maxlength="300">
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="cerrarModal()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="entregaForm.invalid || loading">
+            <i class="fas fa-save"></i> {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL DETALLE ==================== -->
+  <div class="modal" *ngIf="mostrarModalDetalle" (click)="cerrarModalDetalle()">
+    <div class="modal-content modal-detalle" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Detalle de Entrega #{{ entregaSeleccionada?.idEntrega }}</h3>
+        <button class="btn-close" (click)="cerrarModalDetalle()">&times;</button>
+      </div>
+
+      <div class="modal-body" *ngIf="entregaSeleccionada">
+
+        <!-- INFORMACIÓN GENERAL -->
+        <div class="detalle-section">
+          <h4>Información General</h4>
+          <div class="info-grid">
+            <div class="info-item">
+              <strong>Fecha:</strong>
+              <span>{{ formatearFecha(entregaSeleccionada.fechaEntrega) }}</span>
+            </div>
+            <div class="info-item">
+              <strong>Beneficiario:</strong>
+              <span>{{ entregaSeleccionada.nombreBeneficiario || '-' }}</span>
+            </div>
+            <div class="info-item">
+              <strong>Empleado:</strong>
+              <span>{{ entregaSeleccionada.nombreEmpleado || '-' }}</span>
+            </div>
+            <div class="info-item">
+              <strong>Estado:</strong>
+              <span [class]="'badge ' + claseEstado(entregaSeleccionada.estado)">
+                {{ textoEstado(entregaSeleccionada.estado) }}
+              </span>
+            </div>
+            <div class="info-item full-width" *ngIf="entregaSeleccionada.observaciones">
+              <strong>Observaciones:</strong>
+              <span>{{ entregaSeleccionada.observaciones }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- IMAGEN DE ENTREGA -->
+        <div class="detalle-section">
+          <h4>Imagen de Entrega</h4>
+          <div class="imagen-entrega">
+            <img [src]="obtenerUrlImagen(entregaSeleccionada)" alt="Imagen de entrega"
+              style="max-width: 100%; max-height: 400px;">
+            <button class="btn btn-sm btn-primary" (click)="descargarImagen(entregaSeleccionada)">
+              <i class="fas fa-download"></i> Descargar Imagen
+            </button>
+          </div>
+        </div>
+
+        <!-- ARTÍCULOS ENTREGADOS -->
+        <div class="detalle-section">
+          <h4>Artículos Entregados</h4>
+          <table class="tabla-detalles">
+            <thead>
+              <tr>
+                <th>Artículo</th>
+                <th>Cantidad</th>
+                <!-- <th>Origen</th> -->
+                <th>Observaciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let detalle of entregaSeleccionada.detalles">
+                <!-- detalle.nombreArticulo might be available if backend sends it, otherwise we might need to look it up or show ID -->
+                <td>{{ detalle.nombreArticulo || detalle.idArticulo }}</td>
+                <td class="text-center">{{ detalle.cantidad }}</td>
+                <!-- <td>{{ textoOrigen(detalle.origen) }}</td> -->
+                <td>{{ detalle.observaciones || '-' }}</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td><strong>Total Artículos:</strong></td>
+                <td class="text-center"><strong>{{ calcularTotalArticulos(entregaSeleccionada) }}</strong></td>
+                <td colspan="2"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="cerrarModalDetalle()">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,246 @@
+<div class="p-6 text-slate-900">
+  <!-- Header -->
+  <div class="bg-gradient-to-tr from-sky-700 to-cyan-600 text-white rounded-2xl shadow-lg p-6 mb-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      <div>
+        <h1 class="text-2xl font-bold">Administrar Voluntarios</h1>
+        <p class="opacity-90">Administra los voluntarios de la fundación</p>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-white/15 backdrop-blur rounded-xl px-4 py-3 text-center">
+          <div class="text-2xl font-extrabold">{{ stats?.total ?? 0 }}</div>
+          <div class="text-xs">Total</div>
+        </div>
+        <div class="bg-white/15 backdrop-blur rounded-xl px-4 py-3 text-center">
+          <div class="text-2xl font-extrabold">{{ stats?.activos ?? 0 }}</div>
+          <div class="text-xs">Activos</div>
+        </div>
+        <div class="bg-white/15 backdrop-blur rounded-xl px-4 py-3 text-center">
+          <div class="text-2xl font-extrabold">{{ stats?.inactivos ?? 0 }}</div>
+          <div class="text-xs">Inactivos</div>
+        </div>
+        <div class="bg-white/15 backdrop-blur rounded-xl px-4 py-3 text-center">
+          <div class="text-2xl font-extrabold">{{ stats?.completa ?? 0 }}</div>
+          <div class="text-xs">Jornada Completa</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white rounded-2xl shadow-lg p-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+      <!-- search -->
+      <div class="md:col-span-1">
+        <div class="flex items-center gap-2 border border-slate-200 rounded-xl px-3 py-2">
+          <span class="text-slate-500">🔎</span>
+          <input
+            type="text"
+            placeholder="Buscar voluntarios..."
+            class="w-full outline-none bg-transparent"
+            [(ngModel)]="search"
+            (input)="onSearchChange()"
+          />
+        </div>
+      </div>
+
+      <!-- estado -->
+      <div>
+        <label class="block text-xs text-slate-500 mb-1">Estado</label>
+        <select
+          class="w-full border border-slate-200 rounded-xl px-3 py-2"
+          [ngModel]="estadoFiltro"
+          (ngModelChange)="onEstadoChange($event)"
+        >
+          <option value="all">Todos los estados</option>
+          <option [value]="1">Activos</option>
+          <option [value]="0">Inactivos</option>
+        </select>
+      </div>
+
+      <!-- disponibilidad -->
+      <div>
+        <label class="block text-xs text-slate-500 mb-1">Disponibilidad</label>
+        <select class="w-full border border-slate-200 rounded-xl px-3 py-2"
+        [ngModel]="dispFiltro"
+        (ngModelChange)="onDispChange($event)">
+  <option value="all">Todas</option>
+  <option value="MANANA">Mañana</option>
+  <option value="TARDE">Tarde</option>
+  <option value="NOCHE">Noche</option>
+  <option value="FINES_SEMANA">Fines de semana</option>
+  <option value="COMPLETA">Completa</option>
+</select>
+      </div>
+
+      <!-- actions -->
+      <div class="flex flex-wrap gap-2 justify-end">
+        <button class="px-4 py-2 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600" (click)="exportarCSV()">
+          🧾 Exportar
+        </button>
+        <button class="px-4 py-2 rounded-xl bg-indigo-500 text-white hover:bg-indigo-600" (click)="abrirNuevo()">
+          ＋ Nuevo Voluntario
+        </button>
+        <button class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50" (click)="limpiarFiltros()">
+          ✖ Limpiar Filtros
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+    <table class="min-w-full">
+      <thead>
+        <tr class="bg-blue-600 text-white">
+          <th class="text-left px-4 py-3">ID</th>
+          <th class="text-left px-4 py-3">Nombre</th>
+          <th class="text-left px-4 py-3">CI</th>
+          <th class="text-left px-4 py-3">Email</th>
+          <th class="text-left px-4 py-3">Teléfono</th>
+          <th class="text-left px-4 py-3">Disponibilidad</th>
+          <th class="text-left px-4 py-3">Estado</th>
+          <th class="text-left px-4 py-3">Fecha Registro</th>
+          <th class="text-right px-4 py-3">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        <!-- BIEN -->
+<tr *ngIf="loading" class="text-slate-500">
+  <td colspan="9" class="px-4 py-8 text-center">Cargando…</td>
+</tr>
+
+        <tr *ngIf="!loading && !filtered.length" class="text-slate-500">
+          <td colspan="9" class="px-4 py-8 text-center">Sin resultados</td>
+        </tr>
+        <tr *ngFor="let v of filtered; trackBy: trackById" class="hover:bg-slate-50">
+          <td class="px-4 py-3">{{ v.idVoluntario }}</td>
+          <td class="px-4 py-3">{{ v.nombre }} {{ v.apellido }}</td>
+          <td class="px-4 py-3">{{ v.ci }}</td>
+          <td class="px-4 py-3">{{ v.email }}</td>
+          <td class="px-4 py-3">{{ v.telefono }}</td>
+          <td class="px-4 py-3">
+  {{ v.disponibilidad === 'MANANA' ? 'Mañana'
+    : v.disponibilidad === 'TARDE' ? 'Tarde'
+    : v.disponibilidad === 'NOCHE' ? 'Noche'
+    : v.disponibilidad === 'FINES_SEMANA' ? 'Fines de semana'
+    : v.disponibilidad === 'COMPLETA' ? 'Completa' : '—' }}
+</td>
+
+          <td class="px-4 py-3">
+            <span
+              class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+              [ngClass]="{
+                'bg-emerald-100 text-emerald-700': v.estado===1,
+                'bg-slate-200 text-slate-700': v.estado===0
+              }"
+            >
+              {{ v.estado===1 ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td class="px-4 py-3">{{ v.fechaRegistro || '—' }}</td>
+          <td class="px-4 py-3 text-right">
+            <div class="inline-flex gap-2">
+              <button class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-50" (click)="abrirEditar(v)">✏️</button>
+              <button class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-50" (click)="toggleEstado(v)">
+                {{ v.estado===1 ? '⏸' : '▶️' }}
+              </button>
+              <button class="px-2.5 py-1 rounded-lg bg-rose-500 text-white hover:bg-rose-600" (click)="eliminar(v)">🗑</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal -->
+  <div *ngIf="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50">
+    <div class="w-[92vw] max-w-3xl rounded-2xl bg-white shadow-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold">{{ formMode === 'create' ? 'Nuevo Voluntario' : 'Editar Voluntario' }}</h3>
+        <button class="text-slate-500 hover:text-slate-700" (click)="cerrarModal()">✖</button>
+      </div>
+
+      <!-- checkbox de crear usuario (fuera del form para evitar warnings de Angular) -->
+      <div *ngIf="formMode==='create'" class="mb-4 flex items-center gap-2">
+        <input id="crearUsuario" type="checkbox" [(ngModel)]="crearUsuario" name="crearUsuario" class="h-4 w-4">
+        <label for="crearUsuario" class="text-sm">
+          Crear usuario (login = <b>email</b>, contraseña = <b>teléfono</b>)
+        </label>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="guardar()">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs text-slate-500 mb-1">Nombre</label>
+            <input type="text" formControlName="nombre" class="w-full border border-slate-200 rounded-xl px-3 py-2">
+            <small *ngIf="isInvalid('nombre')" class="text-rose-600">Nombre requerido</small>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-500 mb-1">Apellido</label>
+            <input type="text" formControlName="apellido" class="w-full border border-slate-200 rounded-xl px-3 py-2">
+            <small *ngIf="isInvalid('apellido')" class="text-rose-600">Apellido requerido</small>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-500 mb-1">CI</label>
+            <input type="text" formControlName="ci" class="w-full border border-slate-200 rounded-xl px-3 py-2">
+            <small *ngIf="isInvalid('ci')" class="text-rose-600">CI inválido</small>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-500 mb-1">Email</label>
+            <input type="email" formControlName="email" class="w-full border border-slate-200 rounded-xl px-3 py-2">
+            <small *ngIf="isInvalid('email')" class="text-rose-600">Email inválido</small>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-500 mb-1">Teléfono</label>
+            <input type="text" formControlName="telefono" class="w-full border border-slate-200 rounded-xl px-3 py-2">
+            <small *ngIf="isInvalid('telefono')" class="text-rose-600">Teléfono requerido</small>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-500 mb-1">Dirección</label>
+            <input type="text" formControlName="direccion" class="w-full border border-slate-200 rounded-xl px-3 py-2">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-500 mb-1">Especialidad</label>
+            <input type="text" formControlName="especialidad" class="w-full border border-slate-200 rounded-xl px-3 py-2">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-500 mb-1">Disponibilidad</label>
+            <select formControlName="disponibilidad" class="w-full border border-slate-200 rounded-xl px-3 py-2">
+  <option value="MANANA">Mañana</option>
+  <option value="TARDE">Tarde</option>
+  <option value="NOCHE">Noche</option>
+  <option value="FINES_SEMANA">Fines de semana</option>
+  <option value="COMPLETA">Completa</option>
+</select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-500 mb-1">Estado</label>
+            <select formControlName="estado" class="w-full border border-slate-200 rounded-xl px-3 py-2">
+              <option [value]="1">Activo</option>
+              <option [value]="0">Inactivo</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-end gap-2">
+          <button type="button" class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-indigo-500 text-white hover:bg-indigo-600">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div
+    *ngIf="toast.show"
+    class="fixed bottom-5 right-5 z-50 text-white px-4 py-3 rounded-xl shadow-lg"
+    [ngClass]="{
+      'bg-emerald-500': toast.type==='success',
+      'bg-rose-500': toast.type==='error',
+      'bg-slate-900': toast.type==='info'
+    }"
+  >
+    {{ toast.message }}
+  </div>
+</div>

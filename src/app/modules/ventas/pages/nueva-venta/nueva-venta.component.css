@@ -1,0 +1,19 @@
+:host {
+    @apply block;
+  }
+  
+  .form-group {
+    @apply mb-4;
+  }
+  
+  input[type="number"] {
+    @apply focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+  }
+  
+  .table-container {
+    @apply overflow-x-auto;
+  }
+  
+  button:disabled {
+    @apply cursor-not-allowed;
+  }

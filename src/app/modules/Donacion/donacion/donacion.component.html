@@ -1,0 +1,86 @@
+<form [formGroup]="form" class="max-w-7xl mx-auto space-y-5">
+  <!-- Header -->
+  <div class="rounded-2xl overflow-hidden shadow">
+    <div class="bg-gradient-to-r from-blue-600 to-sky-500 text-white px-6 py-5 flex items-start justify-between">
+      <div>
+        <h1 class="text-2xl font-semibold">Gestión de Donaciones</h1>
+        <p class="opacity-90">Crea una donación y continúa con efectivo o artículo</p>
+      </div>
+      <div class="flex gap-4">
+        <div class="bg-white/15 backdrop-blur px-4 py-2 rounded-xl text-center">
+          <div class="text-sm opacity-90">Paso</div>
+          <div class="text-lg font-semibold">{{ nextStep()==='efectivo' ? 'Efectivo' : 'Artículo' }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros/Acciones pequeñas -->
+    <div class="bg-white px-6 py-4 flex flex-wrap gap-3 items-end">
+      <div class="w-full sm:w-auto">
+        <label class="block text-sm font-medium text-slate-700 mb-1">Fecha</label>
+        <input type="date" formControlName="fechaDonacion"
+          class="w-full sm:w-56 rounded-lg border-slate-300 focus:border-blue-600 focus:ring-blue-600">
+      </div>
+      <div class="w-full sm:flex-1">
+        <label class="block text-sm font-medium text-slate-700 mb-1">Donante</label>
+        <select formControlName="idDonante"
+          class="w-full rounded-lg border-slate-300 bg-white focus:border-blue-600 focus:ring-blue-600">
+          <option [ngValue]="null" disabled>Selecciona…</option>
+          <option *ngFor="let d of donantes()" [value]="d.idDonante">
+            {{ nombreDonante(d) }}<ng-container *ngIf="d.ci"> — CI: {{ d.ci }}</ng-container>
+          </option>
+        </select>
+      </div>
+      <div class="w-full sm:flex-1">
+        <label class="block text-sm font-medium text-slate-700 mb-1">Tipo de donación</label>
+        <select formControlName="idTipoDonacion"
+          class="w-full rounded-lg border-slate-300 bg-white focus:border-blue-600 focus:ring-blue-600">
+          <option [ngValue]="null" disabled>Selecciona…</option>
+          <option *ngFor="let t of tipos()" [value]="t.idTipoDonacion">{{ t.descripcion }}</option>
+        </select>
+      </div>
+      <div class="w-full sm:flex-1">
+        <label class="block text-sm font-medium text-slate-700 mb-1">Empleado</label>
+        <select formControlName="idEmpleado"
+          class="w-full rounded-lg border-slate-300 bg-white focus:border-blue-600 focus:ring-blue-600">
+          <option [ngValue]="null" disabled>Selecciona…</option>
+          <option *ngFor="let e of empleados()" [value]="e.id">
+            {{ nombreEmpleado(e) }}
+          </option>
+        </select>
+      </div>
+      <div class="w-full sm:w-40">
+        <label class="block text-sm font-medium text-slate-700 mb-1">Estado</label>
+        <select formControlName="estado"
+          class="w-full rounded-lg border-slate-300 bg-white focus:border-blue-600 focus:ring-blue-600">
+          <option [value]="1">Activo</option>
+          <option [value]="0">Inactivo</option>
+        </select>
+      </div>
+      <div class="w-full sm:w-auto sm:ml-auto flex gap-2">
+        <button type="button" *ngIf="!idEdicion()"
+          class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200"
+          (click)="setNext('efectivo')">Efectivo</button>
+        <button type="button" *ngIf="!idEdicion()"
+          class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200"
+          (click)="setNext('articulo')">Artículo</button>
+        <button type="button" (click)="submit()" class="px-5 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700">
+          {{ idEdicion() ? 'Actualizar' : 'Guardar y continuar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Observaciones -->
+  <div class="bg-white rounded-2xl shadow p-6">
+    <label class="block text-sm font-medium text-slate-700 mb-1">Observaciones (opcional)</label>
+    <textarea formControlName="observaciones" rows="3"
+      class="w-full rounded-lg border-slate-300 focus:border-blue-600 focus:ring-blue-600"
+      placeholder="Notas de la donación…"></textarea>
+
+    <div class="mt-3 flex gap-3">
+      <span *ngIf="okMsg()" class="text-sm text-emerald-700">{{ okMsg() }}</span>
+      <span *ngIf="errMsg()" class="text-sm text-red-600">{{ errMsg() }}</span>
+    </div>
+  </div>
+</form>

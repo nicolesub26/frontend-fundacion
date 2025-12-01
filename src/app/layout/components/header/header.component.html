@@ -1,0 +1,252 @@
+<!-- header.component.html DISEÑO CELESTE/AZUL -->
+<header class="bg-white shadow-lg border-b border-sky-200">
+  <div class="container mx-auto">
+    <div class="flex items-center justify-between h-16 px-4">
+      <!-- Menu Toggle Button -->
+      <button 
+        class="p-2 rounded-lg hover:bg-sky-100 transition-colors duration-200"
+        data-sidebar-toggle
+        (click)="sidebarService.toggle()">
+        <svg class="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
+      <!-- Logo y título -->
+      <div class="flex items-center">
+        <button (click)="toggleSidebar()" 
+                class="p-2 rounded-lg hover:bg-gray-100 transition lg:hidden">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+        <h1 class="text-xl font-bold text-gray-800 ml-2">Sistema</h1>
+      </div>
+
+      <!-- Información del usuario y acciones -->
+      <div class="flex items-center space-x-4">
+        <!-- Mostrar rol actual si está logueado -->
+        <div *ngIf="isLoggedIn && currentRoleValue" class="hidden md:flex items-center space-x-2">
+          <span class="px-3 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-800">
+            {{ getCurrentRoleName() }}
+          </span>
+          <button *ngIf="hasMultipleRoles()"
+                  (click)="openRoleModal()"
+                  class="p-2 rounded-lg hover:bg-gray-100 transition"
+                  title="Cambiar rol">
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Usuario logueado -->
+        <div *ngIf="isLoggedIn" class="relative">
+          <button (click)="toggleDropdown()" 
+                  class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition">
+            <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-medium">
+              {{ getUserInitial() }}
+            </div>
+            <span class="hidden md:block text-sm font-medium text-gray-700">
+              {{ currentUserValue?.login }}
+            </span>
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+
+          <!-- Dropdown menu -->
+          <div *ngIf="showDropdown" 
+               class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+            <!-- Información del usuario -->
+            <div class="px-4 py-3 border-b border-gray-100">
+              <p class="text-sm font-medium text-gray-900">{{ currentUserValue?.login }}</p>
+              <p class="text-xs text-gray-500 mt-1">{{ getCurrentRoleName() }}</p>
+            </div>
+
+            <!-- Opciones -->
+            <div class="py-1">
+              <!-- Cambiar rol -->
+              <button *ngIf="hasMultipleRoles()"
+                      (click)="openRoleModal()"
+                      class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition flex items-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                </svg>
+                <span>Cambiar rol</span>
+              </button>
+
+              <!-- Perfil -->
+              <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition flex items-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                <span>Mi perfil</span>
+              </button>
+
+              <!-- Configuración -->
+              <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition flex items-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <span>Configuración</span>
+              </button>
+            </div>
+
+            <!-- Cerrar sesión -->
+            <div class="border-t border-gray-100 pt-1">
+              <button (click)="logout()"
+                      class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition flex items-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                <span>Cerrar sesión</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón login -->
+        <button *ngIf="!isLoggedIn"
+                (click)="toggleLoginModal()"
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+          Iniciar sesión
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- Login Modal -->
+  <div *ngIf="showLoginModal" 
+       class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div class="bg-white w-96 p-8 rounded-2xl shadow-2xl">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 bg-gradient-to-br from-sky-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">Bienvenido</h2>
+        <p class="text-gray-600">Inicia sesión para continuar ayudando</p>
+      </div>
+      
+      <!-- Error Alert -->
+      <div *ngIf="showError" class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+        <div class="flex items-center">
+          <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+          </svg>
+          <span>{{ errorMessage }}</span>
+        </div>
+      </div>
+      
+      <form [formGroup]="loginForm" (ngSubmit)="handleLogin()" class="space-y-5">
+        <div>
+          <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
+          <input 
+            id="username" 
+            type="text" 
+            formControlName="username" 
+            [class]="'w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none ' + 
+                     (isFieldInvalid('username') ? 'border-red-500' : 'border-sky-300')"
+            placeholder="Ingresa tu usuario" 
+            [disabled]="isLoading" />
+          <div *ngIf="isFieldInvalid('username')" class="mt-1 text-sm text-red-600">
+            {{ getFieldError('username') }}
+          </div>
+        </div>
+        
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+          <input 
+            id="password" 
+            type="password" 
+            formControlName="password" 
+            [class]="'w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none ' + 
+                     (isFieldInvalid('password') ? 'border-red-500' : 'border-sky-300')"
+            placeholder="Ingresa tu contraseña" 
+            [disabled]="isLoading" />
+          <div *ngIf="isFieldInvalid('password')" class="mt-1 text-sm text-red-600">
+            {{ getFieldError('password') }}
+          </div>
+        </div>
+        
+        <button 
+          type="submit" 
+          [disabled]="loginForm.invalid || isLoading"
+          class="w-full bg-gradient-to-r from-sky-500 to-blue-600 text-white py-3 px-4 rounded-lg hover:from-sky-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium flex items-center justify-center">
+          
+          <!-- Loading Spinner -->
+          <svg *ngIf="isLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          
+          <span>{{ isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión' }}</span>
+        </button>
+      </form>
+      
+      <button 
+        class="mt-4 w-full text-center text-sm text-gray-500 hover:text-gray-700 transition-colors" 
+        (click)="toggleLoginModal()"
+        [disabled]="isLoading">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+  <!-- Role Selection Modal -->
+  <div *ngIf="showRoleModal" 
+       class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div class="bg-white w-96 p-8 rounded-2xl shadow-2xl">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 bg-gradient-to-br from-sky-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+          </svg>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">Seleccionar Rol</h2>
+        <p class="text-gray-600">Elige el rol con el que deseas trabajar</p>
+      </div>
+      
+      <div class="space-y-3">
+        <button 
+          *ngFor="let role of availableRoles" 
+          (click)="selectRole(role)"
+          class="w-full p-4 text-left rounded-lg border border-sky-200 hover:bg-sky-50 hover:border-sky-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sky-500">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="font-medium text-gray-800">{{ role.nombre }}</p>
+              <p class="text-sm text-sky-600 mt-1">ID: {{ role.idRol }}</p>
+            </div>
+            <svg class="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </button>
+      </div>
+      
+      <button 
+        class="mt-6 w-full text-center text-sm text-gray-500 hover:text-gray-700 transition-colors" 
+        (click)="closeRoleModal()">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading Overlay (opcional, para cuando se están cargando los menús) -->
+  <div *ngIf="isLoading && showRoleModal" 
+       class="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-60">
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+      <div class="flex items-center space-x-3">
+        <svg class="animate-spin h-5 w-5 text-sky-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span class="text-gray-700">Cargando menús...</span>
+      </div>
+    </div>
+  </div>
+</header>

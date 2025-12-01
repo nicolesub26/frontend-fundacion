@@ -1,0 +1,23 @@
+/* historial.component.scss */
+/* Estilos adicionales no cubiertos por Tailwind */
+
+.historial-container {
+    font-family: 'Inter', sans-serif;
+  }
+  
+  /* Animación para modal */
+  .modal-enter {
+    animation: fadeIn 0.3s ease;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  /* Asegura que el scrolling funcione bien en móviles */
+  @media (max-width: 640px) {
+    .overflow-y-auto {
+      -webkit-overflow-scrolling: touch;
+    }
+  }

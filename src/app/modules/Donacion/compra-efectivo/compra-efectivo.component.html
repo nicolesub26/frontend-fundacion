@@ -1,0 +1,673 @@
+<!-- ============================================ -->
+<!-- CONTENEDOR PRINCIPAL -->
+<!-- ============================================ -->
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+  <div class="max-w-7xl mx-auto">
+
+    <!-- ============================================ -->
+    <!-- HEADER -->
+    <!-- ============================================ -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-4xl font-bold text-gray-900 flex items-center gap-3">
+            <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+            </svg>
+            Compras en Efectivo
+          </h1>
+          <p class="text-gray-600 mt-2">Gestión de compras realizadas con donaciones en efectivo</p>
+        </div>
+        <button 
+          (click)="abrirModalCrear()"
+          class="px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-cyan-700 transform hover:scale-105 transition-all shadow-lg flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Nueva Compra
+        </button>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- ESTADÍSTICAS -->
+    <!-- ============================================ -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      
+      <!-- Total Compras -->
+      <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform">
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <p class="text-blue-100 text-sm font-medium">Total Compras</p>
+            <p class="text-4xl font-bold mt-2">{{ estadisticas.totalCompras }}</p>
+          </div>
+          <div class="bg-white bg-opacity-20 p-3 rounded-lg">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Gastado -->
+      <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform">
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <p class="text-green-100 text-sm font-medium">Total Gastado</p>
+            <p class="text-3xl font-bold mt-2">{{ formatearMoneda(estadisticas.totalGastado) }}</p>
+          </div>
+          <div class="bg-white bg-opacity-20 p-3 rounded-lg">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compras Hoy -->
+      <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform">
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <p class="text-purple-100 text-sm font-medium">Compras Hoy</p>
+            <p class="text-4xl font-bold mt-2">{{ estadisticas.comprasHoy }}</p>
+          </div>
+          <div class="bg-white bg-opacity-20 p-3 rounded-lg">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Promedio -->
+      <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform">
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <p class="text-orange-100 text-sm font-medium">Promedio/Compra</p>
+            <p class="text-3xl font-bold mt-2">{{ formatearMoneda(estadisticas.promedioPorCompra) }}</p>
+          </div>
+          <div class="bg-white bg-opacity-20 p-3 rounded-lg">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00 2-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================ -->
+    <!-- FILTROS Y BÚSQUEDA -->
+    <!-- ============================================ -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        <!-- Búsqueda por texto -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Buscar</label>
+          <input 
+            type="text"
+            [(ngModel)]="busquedaTexto"
+            (ngModelChange)="aplicarFiltros()"
+            placeholder="ID, proveedor, empleado..."
+            class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+        </div>
+
+        <!-- Filtro por estado -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Estado</label>
+          <select 
+            [(ngModel)]="filtroEstado"
+            (ngModelChange)="aplicarFiltros()"
+            class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+            <option [ngValue]="null">Todos</option>
+            <option [ngValue]="1">Activas</option>
+            <option [ngValue]="0">Inactivas</option>
+          </select>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="flex items-end gap-2">
+          <button 
+            (click)="limpiarFiltros()"
+            class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors">
+            Limpiar
+          </button>
+          <button 
+            (click)="exportarExcel()"
+            class="flex-1 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            Excel
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- TABLA DE COMPRAS -->
+    <!-- ============================================ -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
+            <tr>
+              <th class="px-6 py-4 text-left text-sm font-semibold">ID</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold">Fecha</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold">Proveedor</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold">Empleado</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold">Monto Total</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold">Comprobante</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold">Estado</th>
+              <th class="px-6 py-4 text-center text-sm font-semibold">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            
+            <!-- Loading -->
+            <tr *ngIf="loading" class="bg-gray-50">
+              <td colspan="8" class="px-6 py-12 text-center">
+                <div class="flex justify-center items-center gap-3">
+                  <svg class="animate-spin h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span class="text-gray-600 font-medium">Cargando compras...</span>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Sin datos -->
+            <tr *ngIf="!loading && comprasFiltradas.length === 0" class="bg-gray-50">
+              <td colspan="8" class="px-6 py-12 text-center">
+                <div class="flex flex-col items-center gap-3">
+                  <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                  </svg>
+                  <p class="text-gray-600 font-medium text-lg">No se encontraron compras</p>
+                  <button 
+                    (click)="abrirModalCrear()"
+                    class="mt-2 text-blue-600 hover:text-blue-700 font-semibold">
+                    Crear primera compra
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Filas de datos -->
+            <tr *ngFor="let compra of comprasFiltradas; let i = index"
+                class="hover:bg-blue-50 transition-colors cursor-pointer"
+                [class.bg-gray-50]="i % 2 === 0">
+              
+              <!-- ID -->
+              <td class="px-6 py-4">
+                <span class="font-semibold text-gray-900">#{{ compra.idCompra }}</span>
+              </td>
+
+              <!-- Fecha -->
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                  <span class="text-gray-700">{{ formatearFecha(compra.fechaCompra) }}</span>
+                </div>
+              </td>
+
+              <!-- Proveedor -->
+              <td class="px-6 py-4">
+                <div class="font-medium text-gray-900">{{ compra.proveedor }}</div>
+                <div *ngIf="compra.descripcion" class="text-sm text-gray-500 mt-1">
+                  {{ compra.descripcion }}
+                </div>
+              </td>
+
+              <!-- Empleado -->
+              <td class="px-6 py-4">
+                <span class="text-gray-700">{{ compra.nombreEmpleado }}</span>
+              </td>
+
+              <!-- Monto -->
+              <td class="px-6 py-4">
+                <span class="font-bold text-green-600 text-lg">
+                  {{ formatearMoneda(compra.montoTotal) }}
+                </span>
+              </td>
+
+              <!-- Comprobante -->
+              <td class="px-6 py-4">
+                <span *ngIf="compra.comprobante" 
+                      class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                  {{ compra.comprobante }}
+                </span>
+                <span *ngIf="!compra.comprobante" class="text-gray-400 text-sm">Sin comprobante</span>
+              </td>
+
+              <!-- Estado -->
+              <td class="px-6 py-4">
+                <span [class]="'inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ' + getEstadoBadgeClass(compra.estado)">
+                  <span class="w-2 h-2 rounded-full mr-2" 
+                        [class.bg-green-500]="compra.estado === 1"
+                        [class.bg-red-500]="compra.estado === 0"></span>
+                  {{ getEstadoTexto(compra.estado) }}
+                </span>
+              </td>
+
+              <!-- Acciones -->
+              <td class="px-6 py-4">
+                <div class="flex items-center justify-center gap-2">
+                  
+                  <!-- Ver Detalle -->
+                  <button 
+                    (click)="verDetalle(compra)"
+                    class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors group"
+                    title="Ver Detalle">
+                    <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                  </button>
+
+                  <!-- Cambiar Estado -->
+                  <button 
+                    (click)="cambiarEstado(compra)"
+                    [class]="compra.estado === 1 
+                      ? 'p-2 text-orange-600 hover:bg-orange-100 rounded-lg transition-colors group' 
+                      : 'p-2 text-green-600 hover:bg-green-100 rounded-lg transition-colors group'"
+                    [title]="compra.estado === 1 ? 'Desactivar' : 'Activar'">
+                    <svg *ngIf="compra.estado === 1" class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                    </svg>
+                    <svg *ngIf="compra.estado === 0" class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  </button>
+
+                  <!-- Eliminar -->
+                  <button 
+                    (click)="eliminarCompra(compra)"
+                    class="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors group"
+                    title="Eliminar">
+                    <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+
+                </div>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- MODAL CREAR/EDITAR COMPRA -->
+<!-- ============================================ -->
+<div *ngIf="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    
+    <!-- Header del Modal -->
+    <div class="sticky top-0 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-8 py-6 rounded-t-2xl">
+      <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-bold flex items-center gap-3">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Nueva Compra en Efectivo
+        </h2>
+        <button 
+          (click)="cerrarModal()"
+          class="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenido del Modal -->
+    <form [formGroup]="compraForm" (ngSubmit)="crearCompra()" class="p-8">
+      
+      <!-- Información General -->
+      <div class="mb-8">
+        <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Información General
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Donación -->
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">
+              Donación en Efectivo <span class="text-red-500">*</span>
+            </label>
+            <div *ngIf="loadingDonaciones" class="flex items-center gap-2 text-gray-500 mb-2">
+              <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Cargando donaciones...</span>
+            </div>
+            <select 
+              formControlName="idDonacionEfectivo"
+              [disabled]="loadingDonaciones"
+              class="w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              [class.border-red-500]="compraForm.get('idDonacionEfectivo')?.invalid && compraForm.get('idDonacionEfectivo')?.touched"
+              [class.border-gray-300]="!compraForm.get('idDonacionEfectivo')?.invalid || !compraForm.get('idDonacionEfectivo')?.touched">
+              <option [ngValue]="null">Seleccione una donación</option>
+              <option *ngFor="let d of donaciones" [ngValue]="d.idDonacionEfectivo">
+                #{{ d.idDonacionEfectivo }} - {{ formatearMonedaDonacion(d.monto, d.moneda) }}
+              </option>
+            </select>
+            <p *ngIf="compraForm.get('idDonacionEfectivo')?.invalid && compraForm.get('idDonacionEfectivo')?.touched"
+               class="mt-1 text-sm text-red-600">Debe seleccionar una donación</p>
+            
+            <!-- Info de donación seleccionada -->
+            <div *ngIf="getDonacionSeleccionada()" class="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <p class="text-sm text-gray-600">Donación seleccionada:</p>
+              <p class="font-semibold text-gray-900">#{{ getDonacionSeleccionada()!.idDonacionEfectivo }}</p>
+              <p class="text-sm text-gray-700">Monto: {{ formatearMonedaDonacion(getDonacionSeleccionada()!.monto, getDonacionSeleccionada()!.moneda) }}</p>
+            </div>
+          </div>
+
+          <!-- Fecha de Compra -->
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">
+              Fecha de Compra <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="date"
+              formControlName="fechaCompra"
+              class="w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              [class.border-red-500]="compraForm.get('fechaCompra')?.invalid && compraForm.get('fechaCompra')?.touched"
+              [class.border-gray-300]="!compraForm.get('fechaCompra')?.invalid || !compraForm.get('fechaCompra')?.touched">
+            <p *ngIf="compraForm.get('fechaCompra')?.invalid && compraForm.get('fechaCompra')?.touched"
+               class="mt-1 text-sm text-red-600">La fecha es obligatoria</p>
+          </div>
+
+          <!-- Empleado -->
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">
+              Empleado <span class="text-red-500">*</span>
+            </label>
+            <select 
+              formControlName="idEmpleado"
+              class="w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              [class.border-red-500]="compraForm.get('idEmpleado')?.invalid && compraForm.get('idEmpleado')?.touched"
+              [class.border-gray-300]="!compraForm.get('idEmpleado')?.invalid || !compraForm.get('idEmpleado')?.touched">
+              <option [ngValue]="null">Seleccione un empleado</option>
+              <option *ngFor="let emp of empleados" [ngValue]="emp.id">
+                {{ emp.nombre }} {{ emp.apellido }} - CI: {{ emp.ci }}
+              </option>
+            </select>
+            <p *ngIf="compraForm.get('idEmpleado')?.invalid && compraForm.get('idEmpleado')?.touched"
+               class="mt-1 text-sm text-red-600">Debe seleccionar un empleado</p>
+          </div>
+
+          <!-- Proveedor -->
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">
+              Proveedor <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="text"
+              formControlName="proveedor"
+              placeholder="Nombre del proveedor"
+              class="w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              [class.border-red-500]="compraForm.get('proveedor')?.invalid && compraForm.get('proveedor')?.touched"
+              [class.border-gray-300]="!compraForm.get('proveedor')?.invalid || !compraForm.get('proveedor')?.touched">
+            <p *ngIf="compraForm.get('proveedor')?.invalid && compraForm.get('proveedor')?.touched"
+               class="mt-1 text-sm text-red-600">El proveedor es obligatorio (mínimo 2 caracteres)</p>
+          </div>
+
+          <!-- Comprobante -->
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">Comprobante</label>
+            <input 
+              type="text"
+              formControlName="comprobante"
+              placeholder="Número de comprobante"
+              class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+          </div>
+
+          <!-- Descripción -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-bold text-gray-700 mb-2">Descripción</label>
+            <textarea 
+              formControlName="descripcion"
+              rows="2"
+              placeholder="Descripción de la compra (opcional)"
+              class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none"></textarea>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Detalles de Artículos -->
+      <div class="mb-8">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+            </svg>
+            Artículos de la Compra
+          </h3>
+          <button 
+            type="button"
+            (click)="agregarDetalle()"
+            class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Agregar Artículo
+          </button>
+        </div>
+
+        <div formArrayName="detalles" class="space-y-4">
+          <div *ngFor="let detalle of detalles.controls; let i = index" 
+               [formGroupName]="i"
+               class="p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
+            
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+              
+              <!-- Artículo -->
+              <div class="md:col-span-5">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Artículo *</label>
+                <select 
+                  formControlName="idArticulo"
+                  class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  <option [ngValue]="null">Seleccione un artículo</option>
+                  <option *ngFor="let art of articulos" [ngValue]="art.idArticulo">
+                    {{ art.nombreArticulo }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Cantidad -->
+              <div class="md:col-span-2">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Cantidad *</label>
+                <input 
+                  type="number"
+                  formControlName="cantidad"
+                  min="1"
+                  class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              </div>
+
+              <!-- Precio Unitario -->
+              <div class="md:col-span-2">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Precio Unit. *</label>
+                <input 
+                  type="number"
+                  formControlName="precioUnitario"
+                  min="0.01"
+                  step="0.01"
+                  class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              </div>
+
+              <!-- Subtotal -->
+              <div class="md:col-span-2">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Subtotal</label>
+                <div class="px-3 py-2 bg-green-100 text-green-800 font-bold rounded-lg text-center">
+                  {{ formatearMoneda(calcularSubtotal(i)) }}
+                </div>
+              </div>
+
+              <!-- Botón Eliminar -->
+              <div class="md:col-span-1 flex items-end">
+                <button 
+                  type="button"
+                  (click)="eliminarDetalle(i)"
+                  *ngIf="detalles.length > 1"
+                  class="w-full p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  title="Eliminar">
+                  <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total -->
+      <div class="mb-8 p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200">
+        <div class="flex justify-between items-center">
+          <span class="text-xl font-bold text-gray-900">TOTAL DE LA COMPRA:</span>
+          <span class="text-3xl font-bold text-green-600">{{ formatearMoneda(calcularMontoTotal()) }}</span>
+        </div>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="flex gap-4">
+        <button 
+          type="button"
+          (click)="cerrarModal()"
+          class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors">
+          Cancelar
+        </button>
+        <button 
+          type="submit"
+          [disabled]="submitting || compraForm.invalid"
+          class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-cyan-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+          <svg *ngIf="submitting" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>{{ submitting ? 'Guardando...' : 'Guardar Compra' }}</span>
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- MODAL DETALLE COMPRA -->
+<!-- ============================================ -->
+<div *ngIf="showDetalleModal && compraSeleccionada" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+    
+    <!-- Header del Modal -->
+    <div class="sticky top-0 bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-8 py-6 rounded-t-2xl">
+      <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-bold">Detalle de Compra #{{ compraSeleccionada.idCompra }}</h2>
+        <button 
+          (click)="cerrarDetalleModal()"
+          class="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenido del Modal -->
+    <div class="p-8">
+      
+      <!-- Información General -->
+      <div class="mb-8 p-6 bg-gray-50 rounded-xl">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Información General</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-sm text-gray-600">Fecha de Compra</p>
+            <p class="font-semibold text-gray-900">{{ formatearFecha(compraSeleccionada.fechaCompra) }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600">Proveedor</p>
+            <p class="font-semibold text-gray-900">{{ compraSeleccionada.proveedor }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600">Empleado</p>
+            <p class="font-semibold text-gray-900">{{ compraSeleccionada.nombreEmpleado }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600">Estado</p>
+            <span [class]="'inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ' + getEstadoBadgeClass(compraSeleccionada.estado)">
+              {{ getEstadoTexto(compraSeleccionada.estado) }}
+            </span>
+          </div>
+          <div *ngIf="compraSeleccionada.comprobante">
+            <p class="text-sm text-gray-600">Comprobante</p>
+            <p class="font-semibold text-gray-900">{{ compraSeleccionada.comprobante }}</p>
+          </div>
+          <div *ngIf="compraSeleccionada.descripcion" class="col-span-2">
+            <p class="text-sm text-gray-600">Descripción</p>
+            <p class="font-semibold text-gray-900">{{ compraSeleccionada.descripcion }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detalles de Artículos -->
+      <div class="mb-8">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Artículos Comprados</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Artículo</th>
+                <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">Cantidad</th>
+                <th class="px-4 py-3 text-right text-sm font-semibold text-gray-700">Precio Unit.</th>
+                <th class="px-4 py-3 text-right text-sm font-semibold text-gray-700">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <tr *ngFor="let detalle of compraSeleccionada.detalles">
+                <td class="px-4 py-3 text-gray-900">{{ detalle.nombreArticulo }}</td>
+                <td class="px-4 py-3 text-center text-gray-900">{{ detalle.cantidad }}</td>
+                <td class="px-4 py-3 text-right text-gray-900">{{ formatearMoneda(detalle.precioUnitario) }}</td>
+                <td class="px-4 py-3 text-right font-semibold text-gray-900">{{ formatearMoneda(detalle.subtotal) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Total -->
+      <div class="p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200">
+        <div class="flex justify-between items-center">
+          <span class="text-xl font-bold text-gray-900">TOTAL:</span>
+          <span class="text-3xl font-bold text-green-600">{{ formatearMoneda(compraSeleccionada.montoTotal) }}</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

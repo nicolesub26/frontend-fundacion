@@ -1,0 +1,452 @@
+<!-- articulo.component.html -->
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50 p-6">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-blue-600 via-sky-600 to-cyan-600 rounded-xl shadow-xl p-6 mb-6">
+    <div class="flex flex-col md:flex-row md:items-center justify-between">
+      <div class="text-white mb-4 md:mb-0">
+        <h1 class="text-3xl font-bold mb-2">Gestión de Artículos</h1>
+        <p class="text-blue-100">Administra los artículos del inventario de la fundación</p>
+      </div>
+      
+      <!-- Estadísticas -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4" *ngIf="estadisticas">
+        <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
+          <div class="text-2xl font-bold text-white">{{ estadisticas.totalArticulos }}</div>
+          <div class="text-blue-100 text-sm">Total</div>
+        </div>
+        <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
+          <div class="text-2xl font-bold text-white">{{ estadisticas.articulosActivos }}</div>
+          <div class="text-blue-100 text-sm">Activos</div>
+        </div>
+        <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
+          <div class="text-2xl font-bold text-white">{{ estadisticas.articulosConStock }}</div>
+          <div class="text-blue-100 text-sm">Con Stock</div>
+        </div>
+        <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
+          <div class="text-2xl font-bold text-white">{{ categorias.length }}</div>
+          <div class="text-blue-100 text-sm">Categorías</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controles y Filtros -->
+  <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+      <!-- Búsqueda -->
+      <div class="flex-1 max-w-md">
+        <div class="relative">
+          <input
+            type="text"
+            placeholder="Buscar artículos..."
+            [(ngModel)]="searchTerm"
+            (input)="onSearchChange($event)"
+            class="w-full pl-10 pr-4 py-3 border border-sky-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acciones principales -->
+      <div class="flex gap-3">
+        <button
+          (click)="exportarDatos()"
+          class="px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg">
+          <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          Exportar
+        </button>
+
+        <button
+          (click)="abrirModalCrear()"
+          class="px-6 py-3 bg-gradient-to-r from-blue-500 to-sky-500 text-white rounded-lg hover:from-blue-600 hover:to-sky-600 transition-all shadow-lg font-medium">
+          <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+          </svg>
+          Nuevo Artículo
+        </button>
+      </div>
+    </div>
+
+    <!-- Filtros avanzados -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Filtro por estado -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+        <select
+          [(ngModel)]="filtroEstado"
+          (change)="onFiltroEstadoChange($event)"
+          class="w-full px-4 py-3 border border-sky-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none">
+          <option value="todos">Todos los estados</option>
+          <option value="activos">Solo activos</option>
+          <option value="inactivos">Solo inactivos</option>
+        </select>
+      </div>
+
+      <!-- Filtro por categoría -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
+        <select
+          [(ngModel)]="filtroCategoria"
+          (change)="onFiltroCategoriaChange($event)"
+          class="w-full px-4 py-3 border border-sky-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none">
+          <option value="todas">Todas las categorías</option>
+          <option *ngFor="let categoria of categorias" [value]="categoria.idCategoria">
+            {{ categoria.nombreCategoria }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Filtro por stock -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Inventario</label>
+        <select
+          [(ngModel)]="filtroStock"
+          (change)="onFiltroStockChange($event)"
+          class="w-full px-4 py-3 border border-sky-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none">
+          <option value="todos">Todos</option>
+          <option value="con_stock">Con stock</option>
+          <option value="sin_stock">Sin stock</option>
+        </select>
+      </div>
+
+      <!-- Botón limpiar filtros -->
+      <div class="flex items-end">
+        <button
+          (click)="limpiarFiltros()"
+          class="w-full px-4 py-3 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors">
+          <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+          Limpiar Filtros
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="flex justify-center items-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-600"></div>
+    <span class="ml-3 text-sky-600 font-medium">Cargando...</span>
+  </div>
+
+  <!-- Tabla de Artículos -->
+  <div *ngIf="!isLoading && hayDatos" class="bg-white rounded-xl shadow-lg overflow-hidden">
+    <!-- Sin resultados filtrados -->
+    <div *ngIf="!hayResultadosFiltrados" class="p-8 text-center">
+      <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+      </svg>
+      <p class="text-gray-500 text-lg">No se encontraron artículos con los filtros aplicados</p>
+      <button
+        (click)="limpiarFiltros()"
+        class="mt-4 px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-colors">
+        Limpiar filtros
+      </button>
+    </div>
+
+    <!-- Tabla -->
+    <div *ngIf="hayResultadosFiltrados" class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gradient-to-r from-blue-500 to-sky-500 text-white">
+          <tr>
+            <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">ID</th>
+            <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">Nombre</th>
+            <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">Descripción</th>
+            <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">Categoría</th>
+            <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">Estado</th>
+            <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">Fecha Creación</th>
+            <th class="px-6 py-4 text-center text-xs font-medium uppercase tracking-wider">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngFor="let articulo of articulosPaginados; trackBy: trackByArticulo" 
+              class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              {{ articulo.idArticulo }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-gray-900">{{ articulo.nombreArticulo }}</div>
+            </td>
+            <td class="px-6 py-4 max-w-xs">
+              <div class="text-sm text-gray-900 truncate" [title]="articulo.descripcion">
+                {{ articulo.descripcion || '-' }}
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span [class]="obtenerClaseCategoria(articulo.categoria)">
+                {{ obtenerNombreCategoria(articulo) }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span [class]="obtenerClaseEstado(articulo.estado)">
+                {{ obtenerTextoEstado(articulo.estado) }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{ formatearFecha(articulo.fechaCreacion) }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-center">
+              <div class="flex items-center justify-center space-x-2">
+                <!-- Ver Inventario -->
+                <button
+                  (click)="verInventario(articulo)"
+                  class="p-2 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 transition-colors"
+                  title="Ver inventario">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                  </svg>
+                </button>
+
+                <!-- Editar -->
+                <button
+                  (click)="abrirModalEditar(articulo)"
+                  class="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
+                  title="Editar">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  </svg>
+                </button>
+
+                <!-- Cambiar Estado -->
+                <button
+                  (click)="cambiarEstado(articulo)"
+                  [class]="articulo.estado === 1 
+                    ? 'p-2 bg-yellow-100 text-yellow-600 rounded-lg hover:bg-yellow-200 transition-colors' 
+                    : 'p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors'"
+                  [title]="articulo.estado === 1 ? 'Desactivar' : 'Activar'">
+                  <svg *ngIf="articulo.estado === 1" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"/>
+                  </svg>
+                  <svg *ngIf="articulo.estado === 0" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </button>
+
+                <!-- Eliminar -->
+                <button
+                  (click)="eliminar(articulo)"
+                  class="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+                  title="Eliminar">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    <div *ngIf="totalPages > 1" class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+      <div class="flex items-center justify-between">
+        <div class="text-sm text-gray-700">
+          Mostrando {{ (currentPage - 1) * itemsPerPage + 1 }} a 
+          {{ Math.min(currentPage * itemsPerPage, articulosFiltrados.length) }} 
+          de {{ articulosFiltrados.length }} artículos
+        </div>
+        
+        <div class="flex items-center space-x-2">
+          <!-- Anterior -->
+          <button
+            (click)="cambiarPagina(currentPage - 1)"
+            [disabled]="currentPage === 1"
+            class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            Anterior
+          </button>
+
+          <!-- Números de página -->
+          <button
+            *ngFor="let page of pageNumbers"
+            (click)="cambiarPagina(page)"
+            [class]="page === currentPage 
+              ? 'px-3 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-sky-500 border border-transparent rounded-lg' 
+              : 'px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'">
+            {{ page }}
+          </button>
+
+          <!-- Siguiente -->
+          <button
+            (click)="cambiarPagina(currentPage + 1)"
+            [disabled]="currentPage === totalPages"
+            class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            Siguiente
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sin datos -->
+  <div *ngIf="!isLoading && !hayDatos" class="bg-white rounded-xl shadow-lg p-12 text-center">
+    <svg class="mx-auto h-24 w-24 text-gray-300 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+    </svg>
+    <h3 class="text-xl font-medium text-gray-900 mb-2">No hay artículos registrados</h3>
+    <p class="text-gray-500 mb-6">Comienza creando tu primer artículo para el inventario</p>
+    <button
+      (click)="abrirModalCrear()"
+      class="px-6 py-3 bg-gradient-to-r from-blue-500 to-sky-500 text-white rounded-lg hover:from-blue-600 hover:to-sky-600 transition-all shadow-lg font-medium">
+      <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+      </svg>
+      Crear Primer Artículo
+    </button>
+  </div>
+
+  <!-- Modal Crear/Editar -->
+  <div *ngIf="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <!-- Header del Modal -->
+      <div class="bg-gradient-to-r from-blue-500 to-sky-500 text-white p-6 rounded-t-2xl">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-2xl font-bold">
+              {{ isEditMode ? 'Editar Artículo' : 'Nuevo Artículo' }}
+            </h2>
+            <p class="text-blue-100 mt-1">
+              {{ isEditMode ? 'Modifica los datos del artículo' : 'Completa la información requerida' }}
+            </p>
+          </div>
+          <button
+            (click)="cerrarModal()"
+            class="p-2 hover:bg-white/10 rounded-lg transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Formulario -->
+      <form [formGroup]="articuloForm" (ngSubmit)="onSubmit()" class="p-6 space-y-6">
+        <!-- Nombre del Artículo -->
+        <div>
+          <label for="nombreArticulo" class="block text-sm font-semibold text-gray-700 mb-2">
+            Nombre del Artículo *
+          </label>
+          <input
+            id="nombreArticulo"
+            type="text"
+            formControlName="nombreArticulo"
+            placeholder="Ej: Camiseta de algodón, Pantalón deportivo..."
+            [class]="'w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all ' + 
+                     (isFieldInvalid('nombreArticulo') ? 'border-red-500 bg-red-50' : 'border-gray-300')"
+            [disabled]="isLoading">
+          
+          <div *ngIf="isFieldInvalid('nombreArticulo')" class="mt-2 flex items-center text-red-600 text-sm">
+            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+            {{ getFieldError('nombreArticulo') }}
+          </div>
+        </div>
+
+        <!-- Categoría -->
+        <div>
+          <label for="categoria" class="block text-sm font-semibold text-gray-700 mb-2">
+            Categoría *
+          </label>
+          <select
+            id="categoria"
+            formControlName="categoria"
+            [class]="'w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all ' + 
+                     (isFieldInvalid('categoria') ? 'border-red-500 bg-red-50' : 'border-gray-300')"
+            [disabled]="isLoading">
+            <option value="">Selecciona una categoría</option>
+            <option *ngFor="let categoria of categorias" [value]="categoria.idCategoria">
+              {{ categoria.nombreCategoria }}
+            </option>
+          </select>
+          
+          <div *ngIf="isFieldInvalid('categoria')" class="mt-2 flex items-center text-red-600 text-sm">
+            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+            {{ getFieldError('categoria') }}
+          </div>
+        </div>
+
+        <!-- Descripción -->
+        <div>
+          <label for="descripcion" class="block text-sm font-semibold text-gray-700 mb-2">
+            Descripción
+          </label>
+          <textarea
+            id="descripcion"
+            formControlName="descripcion"
+            rows="4"
+            placeholder="Describe las características del artículo..."
+            [class]="'w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all resize-none ' + 
+                     (isFieldInvalid('descripcion') ? 'border-red-500 bg-red-50' : 'border-gray-300')"
+            [disabled]="isLoading"></textarea>
+          
+          <div *ngIf="isFieldInvalid('descripcion')" class="mt-2 flex items-center text-red-600 text-sm">
+            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+            {{ getFieldError('descripcion') }}
+          </div>
+        </div>
+
+        <!-- Información adicional para edición -->
+        <div *ngIf="isEditMode && articuloSeleccionado" class="bg-sky-50 rounded-xl p-4">
+          <h4 class="text-sm font-semibold text-sky-800 mb-3">Información actual</h4>
+          <div class="grid grid-cols-2 gap-3 text-xs">
+            <div>
+              <span class="text-gray-600">ID:</span>
+              <span class="font-medium ml-1">{{ articuloSeleccionado.idArticulo }}</span>
+            </div>
+            <div>
+              <span class="text-gray-600">Estado:</span>
+              <span [class]="articuloSeleccionado.estado === 1 ? 'text-green-600 font-medium ml-1' : 'text-red-600 font-medium ml-1'">
+                {{ obtenerTextoEstado(articuloSeleccionado.estado) }}
+              </span>
+            </div>
+            <div class="col-span-2">
+              <span class="text-gray-600">Categoría actual:</span>
+              <span class="font-medium ml-1">{{ obtenerNombreCategoria(articuloSeleccionado) }}</span>
+            </div>
+            <div class="col-span-2">
+              <span class="text-gray-600">Creado:</span>
+              <span class="font-medium ml-1">{{ formatearFecha(articuloSeleccionado.fechaCreacion) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex gap-3 pt-4">
+          <button
+            type="button"
+            (click)="cerrarModal()"
+            [disabled]="isLoading"
+            class="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+            Cancelar
+          </button>
+          
+          <button
+            type="submit"
+            [disabled]="articuloForm.invalid || isLoading"
+            class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-sky-500 text-white rounded-xl hover:from-blue-600 hover:to-sky-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg font-medium flex items-center justify-center">
+            
+            <!-- Loading spinner -->
+            <svg *ngIf="isLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            
+            <span>
+              {{ isLoading ? 'Guardando...' : (isEditMode ? 'Actualizar' : 'Crear Artículo') }}
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

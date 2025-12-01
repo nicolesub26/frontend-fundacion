@@ -1,0 +1,266 @@
+<!-- Toast -->
+<div *ngIf="toast.show" class="fixed top-4 right-4 z-50">
+  <div
+    class="px-4 py-2 rounded-xl shadow-lg"
+    [ngClass]="{
+      'bg-green-600 text-white': toast.type === 'success',
+      'bg-red-600 text-white': toast.type === 'error',
+      'bg-blue-600 text-white': toast.type === 'info'
+    }">
+    {{ toast.message }}
+  </div>
+</div>
+
+<div class="p-4 md:p-6 max-w-7xl mx-auto">
+
+  <!-- Header + KPIs -->
+  <div class="bg-gradient-to-r from-sky-600 to-cyan-600 text-white rounded-2xl p-6 mb-6 flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold">Administrar Donantes</h1>
+      <p class="opacity-90">Administra los donantes de la fundación</p>
+    </div>
+    <div class="grid grid-cols-4 gap-3 text-center">
+      <div class="bg-white/15 rounded-xl px-4 py-2">
+        <div class="text-2xl font-bold">{{ total }}</div>
+        <div class="text-sm opacity-90">Total</div>
+      </div>
+      <div class="bg-white/15 rounded-xl px-4 py-2">
+        <div class="text-2xl font-bold">{{ activos }}</div>
+        <div class="text-sm opacity-90">Activos</div>
+      </div>
+      <div class="bg-white/15 rounded-xl px-4 py-2">
+        <div class="text-2xl font-bold">{{ inactivos }}</div>
+        <div class="text-sm opacity-90">Inactivos</div>
+      </div>
+      <div class="bg-white/15 rounded-xl px-4 py-2">
+        <div class="text-2xl font-bold">{{ cantTipos }}</div>
+        <div class="text-sm opacity-90">Tipos</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros + acciones -->
+  <div class="bg-white rounded-2xl shadow p-4 md:p-5 mb-6">
+    <div class="grid md:grid-cols-4 gap-3 items-end">
+      <div class="md:col-span-2">
+        <div class="relative">
+          <input type="text" [(ngModel)]="search"
+                 placeholder="Buscar donantes..."
+                 class="w-full border rounded-xl pl-10 pr-3 py-2" />
+          <svg class="w-5 h-5 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z"/>
+          </svg>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm text-gray-600 mb-1">Estado</label>
+        <select [(ngModel)]="filtroEstado" (change)="cargarDonantes()"
+                class="w-full border rounded-xl px-3 py-2">
+          <option value="">Todos los estados</option>
+          <option value="1">Activos</option>
+          <option value="0">Inactivos</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm text-gray-600 mb-1">Tipo</label>
+        <select [(ngModel)]="filtroTipo" class="w-full border rounded-xl px-3 py-2">
+          <option [ngValue]="''">Todos los tipos</option>
+          <option *ngFor="let t of tipos" [ngValue]="t.idTipoDonante">{{ t.descripcion }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mt-4 flex gap-3">
+      <button (click)="exportarCSV()"
+              class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 7v6m4-6v6m4-6v6M4 17h16M4 7h16M4 21h16"/>
+        </svg>
+        Exportar
+      </button>
+
+      <button (click)="abrirNuevo()"
+              class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl ml-auto">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 4v16m8-8H4"/>
+        </svg>
+        Nuevo Donante
+      </button>
+
+      <button (click)="search=''; filtroTipo=''; filtroEstado=''; cargarDonantes()"
+              class="inline-flex items-center gap-2 border px-4 py-2 rounded-xl">
+        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+        Limpiar Filtros
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="bg-white rounded-2xl shadow overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead class="bg-blue-600 text-white">
+          <tr>
+            <th class="text-left p-3">ID</th>
+            <th class="text-left p-3">Nombre</th>
+            <th class="text-left p-3">CI</th>
+            <th class="text-left p-3">Email</th>
+            <th class="text-left p-3">Teléfono</th>
+            <th class="text-left p-3">Tipo Donante</th>
+            <th class="text-left p-3">Estado</th>
+            <th class="text-left p-3">Fecha Registro</th>
+            <th class="text-right p-3">Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody *ngIf="!loading; else loadingTpl">
+          <tr *ngFor="let r of rows; trackBy: trackById" class="border-b">
+            <td class="p-3">{{ r.idDonante }}</td>
+            <td class="p-3 font-medium">{{ r.nombre }} {{ r.apellido }}</td>
+            <td class="p-3">{{ r.ci || '-' }}</td>
+            <td class="p-3">{{ r.email || '-' }}</td>
+            <td class="p-3">{{ r.telefono || '-' }}</td>
+            <td class="p-3">
+              <span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-700">
+                {{ r.tipoDonanteDescripcion || r.tipoDonanteId }}
+              </span>
+            </td>
+            <td class="p-3">
+              <span class="px-2 py-1 rounded-full text-xs" [ngClass]="estadoBadgeClasses(r.estado)">
+                {{ r.estado === 1 ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+            <td class="p-3">{{ r.fechaRegistro | date:'d/M/yyyy' }}</td>
+
+            <td class="p-3">
+              <div class="flex items-center gap-2 justify-end">
+                <button (click)="abrirEditar(r)" class="p-2 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100" title="Editar">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M11 5h2m-9 9l6 6 9-9-6-6-9 9z"/>
+                  </svg>
+                </button>
+
+                <button (click)="toggleEstado(r)"
+                        class="p-2 rounded-lg"
+                        [ngClass]="r.estado===1 ? 'bg-red-50 text-red-700 hover:bg-red-100' : 'bg-green-50 text-green-700 hover:bg-green-100'"
+                        [title]="r.estado===1 ? 'Deshabilitar' : 'Habilitar'">
+                  <svg *ngIf="r.estado===1" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M18 12H6"/>
+                  </svg>
+                  <svg *ngIf="r.estado===0" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 6v12m6-6H6"/>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <tr *ngIf="rows.length === 0">
+            <td colspan="9" class="p-5 text-center text-gray-500">No hay donantes registrados</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <ng-template #loadingTpl>
+        <div class="p-6 text-center text-gray-500">Cargando...</div>
+      </ng-template>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Crear/Editar -->
+<div *ngIf="showModal" class="fixed inset-0 z-50 flex items-center justify-center">
+  <div class="absolute inset-0 bg-black/40" (click)="cerrarModal()"></div>
+
+  <div class="relative bg-white rounded-2xl shadow-xl w-[95%] max-w-2xl">
+    <div class="p-4 border-b flex items-center justify-between">
+      <h3 class="text-lg font-semibold">{{ modalTitle }}</h3>
+      <button class="p-2 rounded-lg hover:bg-gray-100" (click)="cerrarModal()">
+        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="p-4 grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm mb-1">Nombre *</label>
+          <input type="text" formControlName="nombre" class="w-full border rounded-xl px-3 py-2"
+                 [class.border-red-500]="isInvalid('nombre')" />
+          <p *ngIf="isInvalid('nombre')" class="text-xs text-red-600 mt-1">Nombre inválido</p>
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1">Apellido *</label>
+          <input type="text" formControlName="apellido" class="w-full border rounded-xl px-3 py-2"
+                 [class.border-red-500]="isInvalid('apellido')" />
+          <p *ngIf="isInvalid('apellido')" class="text-xs text-red-600 mt-1">Apellido inválido</p>
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1">CI</label>
+          <input type="text" formControlName="ci" class="w-full border rounded-xl px-3 py-2"
+                 [class.border-red-500]="isInvalid('ci')" />
+          <p *ngIf="isInvalid('ci')" class="text-xs text-red-600 mt-1">CI inválido</p>
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1">Email</label>
+          <input type="email" formControlName="email" class="w-full border rounded-xl px-3 py-2"
+                 [class.border-red-500]="isInvalid('email')" />
+          <p *ngIf="isInvalid('email')" class="text-xs text-red-600 mt-1">Email inválido</p>
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1">Teléfono</label>
+          <input type="text" formControlName="telefono" class="w-full border rounded-xl px-3 py-2"
+                 [class.border-red-500]="isInvalid('telefono')" />
+          <p *ngIf="isInvalid('telefono')" class="text-xs text-red-600 mt-1">Teléfono inválido</p>
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1">Dirección</label>
+          <input type="text" formControlName="direccion" class="w-full border rounded-xl px-3 py-2" />
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1">Fecha de registro</label>
+          <input type="date" formControlName="fechaRegistro" class="w-full border rounded-xl px-3 py-2" />
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1">Tipo Donante *</label>
+          <select formControlName="idTipoDonante" class="w-full border rounded-xl px-3 py-2"
+                  [class.border-red-500]="isInvalid('idTipoDonante')">
+            <option [ngValue]="null" disabled>-- Seleccionar --</option>
+            <option *ngFor="let t of tipos" [ngValue]="t.idTipoDonante">{{ t.descripcion }}</option>
+          </select>
+          <p *ngIf="isInvalid('idTipoDonante')" class="text-xs text-red-600 mt-1">Requerido</p>
+        </div>
+      </div>
+
+      <div class="p-4 border-t flex justify-end gap-3">
+        <button type="button" (click)="cerrarModal()" class="px-4 py-2 rounded-xl border">
+          Cancelar
+        </button>
+        <button type="submit" [disabled]="saving"
+                class="px-4 py-2 rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50">
+          {{ selectedId == null ? 'Guardar' : 'Actualizar' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
